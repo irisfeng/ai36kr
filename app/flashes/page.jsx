@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import VoteButtons from '@/components/VoteButtons';
 import { listFlashes } from '@/lib/queries';
 import { dateGroup, timeHM } from '@/lib/time';
@@ -6,8 +7,14 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = { title: '7×24 快讯 - 听潮' };
 
-export default function FlashesPage() {
-  const flashes = listFlashes();
+const PAGE_SIZE = 100;
+
+export default function FlashesPage({ searchParams }) {
+  const before = typeof searchParams.before === 'string' && !Number.isNaN(Date.parse(searchParams.before))
+    ? searchParams.before
+    : '';
+  const flashes = listFlashes({ before, limit: PAGE_SIZE });
+  const oldest = flashes[flashes.length - 1];
   const groups = [];
   for (const f of flashes) {
     const d = dateGroup(f.created_at);
@@ -20,7 +27,7 @@ export default function FlashesPage() {
     <div className="container" style={{ maxWidth: 780 }}>
       <div className="page-head">
         <h1>7×24 快讯</h1>
-        <p>AI 行业脉搏，全天候滚动更新。</p>
+        <p>AI 行业脉搏，全天候滚动更新。{before ? '（更早的快讯）' : ''}</p>
       </div>
       <div style={{ padding: '16px 0 64px' }}>
         {groups.map((g) => (
@@ -53,6 +60,15 @@ export default function FlashesPage() {
             </div>
           </section>
         ))}
+        {flashes.length === 0 && <div className="empty">没有更早的快讯了。</div>}
+        <nav className="flash-pager">
+          {before ? <Link href="/flashes">← 回到最新</Link> : <span />}
+          {flashes.length === PAGE_SIZE && oldest ? (
+            <Link href={`/flashes?before=${encodeURIComponent(oldest.created_at)}`}>
+              加载更早 ↓
+            </Link>
+          ) : <span />}
+        </nav>
       </div>
     </div>
   );

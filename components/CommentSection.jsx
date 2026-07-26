@@ -19,16 +19,30 @@ function CommentForm({ placeholder, onSubmit, submitLabel = '发布评论', auto
   const [content, setContent] = useState('');
   const [nickname, setNick] = useState('');
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => { setNick(getNickname()); }, []);
+
+  // 输入自动长高（封顶 240px），移动端免手动拖
+  function autoResize(e) {
+    const el = e.target;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 240) + 'px';
+  }
 
   async function submit() {
     const text = content.trim();
     if (!text || sending) return;
     setSending(true);
-    const ok = await onSubmit(text);
+    setError('');
+    const result = await onSubmit(text);
     setSending(false);
-    if (ok) setContent('');
+    if (result === true) setContent('');
+    else setError(typeof result === 'string' ? result : '发布失败，请稍后重试');
+  }
+
+  function onKeyDown(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') submit();
   }
 
   return (
@@ -39,10 +53,15 @@ function CommentForm({ placeholder, onSubmit, submitLabel = '发布评论', auto
         value={content}
         maxLength={1000}
         onChange={(e) => setContent(e.target.value)}
+        onInput={autoResize}
+        onKeyDown={onKeyDown}
+        rows={3}
       />
       <div className="form-foot">
         <span className="form-user">以 <b>{nickname || '…'}</b> 的身份发言</span>
+        {error ? <span className="form-error">{error}</span> : null}
         <span style={{ marginLeft: 'auto' }} />
+        <span className="form-hint">⌘/Ctrl+Enter 发送</span>
         <button className="btn-primary" onClick={submit} disabled={!content.trim() || sending}>
           {sending ? '发布中…' : submitLabel}
         </button>
@@ -76,7 +95,8 @@ export default function CommentSection({ postId }) {
           setReplyTo(null);
           resolve(true);
         } else {
-          resolve(false);
+          const data = await res.json().catch(() => ({}));
+          resolve(data.error || false);
         }
       });
     });
