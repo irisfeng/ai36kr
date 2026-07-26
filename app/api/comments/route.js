@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { listComments } from '@/lib/queries';
 import db from '@/lib/db';
+import { consumeRequestRateLimit } from '@/lib/rate-limit';
+import { rateLimitExceeded, writeJson } from '@/lib/write-response';
 
 export const dynamic = 'force-dynamic';
+const COMMENT_LIMIT = { scope: 'comments', limit: 20, windowMs: 5 * 60 * 1000 };
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -14,11 +17,14 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  const requestLimit = consumeRequestRateLimit(request, COMMENT_LIMIT);
+  if (!requestLimit.allowed) return rateLimitExceeded(requestLimit);
+
   let body;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: '请求格式错误' }, { status: 400 });
+    return writeJson({ error: '请求格式错误' }, { status: 400, rateLimit: requestLimit });
   }
 
   const postId = Number(body.postId);
@@ -27,17 +33,17 @@ export async function POST(request) {
   const content = String(body.content || '').trim().slice(0, 1000);
 
   if (!Number.isInteger(postId) || postId <= 0 || !nickname || !content) {
-    return NextResponse.json({ error: '参数不完整' }, { status: 400 });
+    return writeJson({ error: '参数不完整' }, { status: 400, rateLimit: requestLimit });
   }
   const post = db.prepare('SELECT id FROM posts WHERE id = ?').get(postId);
-  if (!post) return NextResponse.json({ error: '文章不存在' }, { status: 404 });
+  if (!post) return writeJson({ error: '文章不存在' }, { status: 404, rateLimit: requestLimit });
 
   if (parentId) {
     const parent = db.prepare('SELECT id, parent_id FROM comments WHERE id = ? AND post_id = ?').get(parentId, postId);
-    if (!parent) return NextResponse.json({ error: '回复的评论不存在' }, { status: 404 });
+    if (!parent) return writeJson({ error: '回复的评论不存在' }, { status: 404, rateLimit: requestLimit });
     // 只支持一层嵌套：回复一律挂到顶层评论下
     if (parent.parent_id) {
-      return NextResponse.json({ error: '只支持一层回复' }, { status: 400 });
+      return writeJson({ error: '只支持一层回复' }, { status: 400, rateLimit: requestLimit });
     }
   }
 
@@ -46,5 +52,5 @@ export async function POST(request) {
   ).run(postId, parentId, nickname, content, new Date().toISOString());
 
   const comment = db.prepare('SELECT * FROM comments WHERE id = ?').get(Number(r.lastInsertRowid));
-  return NextResponse.json(comment, { status: 201 });
+  return writeJson(comment, { status: 201, rateLimit: requestLimit });
 }

@@ -1,7 +1,7 @@
 {
   "name": "听潮 TideWire - AI 行业新闻聚合与社区",
   "short_name": "听潮",
-  "description": "聚合 25 个权威信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。",
+  "description": "聚合 37 个真实信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5F3ED",

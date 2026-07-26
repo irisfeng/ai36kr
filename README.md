@@ -11,12 +11,12 @@ npm run dev        # 开发模式，访问 http://localhost:3000
 npm run build && npm start
 ```
 
-首次访问自动建库（`data/ai36kr.db`），启动后立即开始首轮 RSS 聚合，无需手动初始化。
+首次访问自动建库（`data/tidewire.db`），启动后立即开始首轮 RSS 聚合，无需手动初始化。
 
 ## 技术栈
 
 - Next.js 14（App Router）+ React 18 + 原生 CSS（CSS 变量 + 手写样式，无 Tailwind）
-- 数据库：Node.js 内置 `node:sqlite`（`DatabaseSync`），零原生编译依赖，Node 22+ 直接可用
+- 数据库：`libsql` 双模连接；本地使用 `data/tidewire.db`，生产可通过 Turso 使用远端持久化数据库
 - 无登录系统：昵称存 localStorage（首次评论弹窗输入）；投票用 localStorage 匿名 token 去重（可取消/改票）
 - 文章封面：CSS 墨色系双色调渐变 + 白色衬线分类字，分类间仅色相微差，无外部图片依赖
 
@@ -82,7 +82,7 @@ npm run build && npm start
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| GET | `/api/posts?sort=hot\|new\|deep&cat=&q=&since=24h&token=` | 文章列表（`since=Nh` 限定时间窗；带 `token` 时返回每篇 `my_reactions`） |
+| GET | `/api/posts?sort=hot\|new\|deep&cat=&q=&since=24h&token=&limit=50&offset=0` | 有界文章列表（默认 50、`limit` 最大 100、`offset` 最大 10000；`since=Nh` 限定时间窗；带 `token` 时返回每篇 `my_reactions`） |
 | POST | `/api/posts` | 投稿 `{title, url?, category, summary}`，url 重复返回 409 |
 | GET | `/api/posts/[id]?token=` | 文章详情（含正文段落、reaction 计数） |
 | POST | `/api/vote` | 投票 `{targetType: post\|comment\|flash\|product, targetId, value: 1\|-1, token}`，幂等：同值再投=取消，异值=改票 |
@@ -112,7 +112,7 @@ components/
   Nav.jsx  PulseBar.jsx  PostCard.jsx  VoteButtons.jsx  ReactionBar.jsx
   CommentSection.jsx  NicknameModal.jsx  SubmitForm.jsx  identity.js
 lib/
-  db.js               # node:sqlite 连接 + schema + 轻量迁移 + 空库播种
+  db.js               # libsql 本地/Turso 双模连接 + schema + 轻量迁移 + 快照水合
   rss.js              # RSS 源清单 + 抓取入库 + 刷新调度
   classify.js         # 聚合条目关键词分类归一
   keywords.js         # AI 领域热词词典 + 词频统计
@@ -120,5 +120,25 @@ lib/
   queries.js          # 查询层（热度排序、reaction 注入等）
   categories.js       # 分类渐变配色
   time.js             # 相对时间格式化
-data/ai36kr.db        # SQLite 数据库（首次访问自动生成）
+data/tidewire.db      # 本地 SQLite 数据库（首次访问自动生成）
 ```
+
+## 部署配置
+
+生产环境建议使用 Turso 持久化；如果不配置，Vercel 仅会使用 `/tmp` 临时 SQLite，并在冷启动时从 `data/snapshot.json` 水合，社区投稿、评论、投票和反应不能保证跨实例持久保存。
+
+| 环境变量 | 要求 | 用途 |
+| --- | --- | --- |
+| `CRON_SECRET` | 生产必需 | 保护 `/api/refresh`；Vercel Cron 会以 Bearer 令牌调用。请生成高熵随机值，例如运行 `openssl rand -hex 32` 后将结果分别配置到 Vercel 环境变量中，不要提交到仓库 |
+| `TURSO_DATABASE_URL` | 生产持久化必需 | Turso/libSQL 数据库 URL |
+| `TURSO_AUTH_TOKEN` | 与 Turso URL 配套必需 | Turso 访问令牌 |
+| `NEXT_PUBLIC_SITE_URL` | 生产推荐 | 站点规范 origin，例如 `https://your-domain.example`；用于 serverless 实例触发受保护的刷新函数 |
+| `ARK_API_KEY` | 可选 | 火山方舟标题翻译；缺失时回退到公开翻译端点 |
+
+部署后还需在 GitHub Actions secrets 中按需配置 `ARK_API_KEY`，供定时快照聚合使用。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
+
+### 写接口限流边界
+
+`POST /api/posts`、`/api/comments`、`/api/vote`、`/api/reactions` 使用进程内固定窗口限流。Vercel 环境只信任平台重写的 `x-vercel-forwarded-for`，并在内存中仅保存其哈希；非 Vercel 环境不信任调用方可伪造的转发头，因此使用共享匿名桶。vote/reaction 还叠加匿名 token 桶。
+
+这是无第三方依赖的安全降级，不是跨实例的全局配额：serverless 冷启动和不同实例各自维护计数。需要严格的生产级全局限流时，应接入 Vercel Firewall/WAF 或具有原子计数和 TTL 的共享存储。

@@ -12,7 +12,7 @@ function esc(s) {
 }
 
 export async function GET() {
-  const posts = listPosts({ sort: 'new' }).slice(0, 50);
+  const posts = listPosts({ sort: 'new', limit: 50 });
   const items = posts
     .map((p) => {
       const link = `${SITE}/post/${p.id}`;
@@ -33,7 +33,7 @@ export async function GET() {
 <channel>
   <title>听潮 TideWire - AI 行业新闻聚合与社区</title>
   <link>${SITE}</link>
-  <description>聚合 25 个权威信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。</description>
+  <description>聚合 37 个真实信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。</description>
   <language>zh-CN</language>
   <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items}

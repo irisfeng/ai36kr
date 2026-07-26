@@ -11,13 +11,18 @@ const TABS = [
   { key: 'new', label: '最新' },
   { key: 'deep', label: '深度长读' },
 ];
+const PAGE_SIZE = 50;
 
 export default function HomePage({ searchParams }) {
   const sort = ['hot', 'new', 'deep'].includes(searchParams.sort) ? searchParams.sort : 'hot';
   const cat = searchParams.cat || '';
   const q = (searchParams.q || '').trim();
+  const requestedPage = Number(searchParams.page);
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 && requestedPage <= 200
+    ? requestedPage
+    : 1;
 
-  const posts = listPosts({ sort, cat, q });
+  const posts = listPosts({ sort, cat, q, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE });
   const hot5 = weeklyTopPosts(5);
   const flashes = latestFlashes(5);
   const products = topProducts(3);
@@ -29,13 +34,22 @@ export default function HomePage({ searchParams }) {
     return `/?${p.toString()}`;
   }
 
+  function pageHref(nextPage) {
+    const p = new URLSearchParams();
+    if (sort !== 'hot') p.set('sort', sort);
+    if (cat) p.set('cat', cat);
+    if (q) p.set('q', q);
+    if (nextPage > 1) p.set('page', String(nextPage));
+    return `/?${p.toString()}`;
+  }
+
   return (
     <div className="container page-grid">
       <main className="main-col">
         {q ? (
           <div className="page-head" style={{ paddingTop: 0 }}>
             <h1 style={{ fontSize: 22 }}>「{q}」的搜索结果</h1>
-            <p>共 {posts.length} 篇 · <Link href="/" style={{ color: 'var(--accent)' }}>清除搜索</Link></p>
+            <p>第 {page} 页 · 本页 {posts.length} 篇 · <Link href="/" style={{ color: 'var(--accent)' }}>清除搜索</Link></p>
           </div>
         ) : (
           <nav className="tabs">
@@ -53,6 +67,12 @@ export default function HomePage({ searchParams }) {
         )}
         {posts.length === 0 && <div className="empty">没有找到相关内容，换个关键词试试。</div>}
         {posts.map((p) => <PostCard key={p.id} post={p} />)}
+        {(page > 1 || posts.length === PAGE_SIZE) && (
+          <nav className="tabs" aria-label="文章翻页" style={{ justifyContent: 'space-between', marginTop: 24 }}>
+            <span>{page > 1 ? <Link href={pageHref(page - 1)}>← 上一页</Link> : null}</span>
+            <span>{posts.length === PAGE_SIZE ? <Link href={pageHref(page + 1)}>下一页 →</Link> : null}</span>
+          </nav>
+        )}
       </main>
 
       <aside className="side-col">

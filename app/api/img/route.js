@@ -1,38 +1,32 @@
 import { NextResponse } from 'next/server';
+import { fetchPublicImage, ImageProxyError } from '@/lib/safe-image';
 
 export const dynamic = 'force-dynamic';
 
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
-const MAX_BYTES = 6 * 1024 * 1024;
+const ERROR_HEADERS = {
+  'Cache-Control': 'no-store',
+  'X-Content-Type-Options': 'nosniff',
+};
 
-// 图片代理：分享卡片渲染跨域缩略图用（仅放行 image/*，限 6MB）
+// 分享卡片跨域缩略图代理：仅请求已解析并固定到公网地址的图片，不跟随重定向。
 export async function GET(request) {
-  const u = new URL(request.url).searchParams.get('u') || '';
-  if (!/^https?:\/\//i.test(u)) {
-    return NextResponse.json({ error: 'url 无效' }, { status: 400 });
-  }
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10000);
+  const rawUrl = new URL(request.url).searchParams.get('u') || '';
   try {
-    const res = await fetch(u, {
-      signal: ctrl.signal,
-      headers: { 'User-Agent': UA, Referer: new URL(u).origin },
-    });
-    if (!res.ok) return new NextResponse(null, { status: 404 });
-    const type = res.headers.get('content-type') || '';
-    if (!type.startsWith('image/')) return new NextResponse(null, { status: 415 });
-    const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length > MAX_BYTES) return new NextResponse(null, { status: 413 });
-    return new NextResponse(buf, {
+    const image = await fetchPublicImage(rawUrl);
+    return new NextResponse(image.body, {
       headers: {
-        'Content-Type': type,
-        'Cache-Control': 'public, max-age=86400, immutable',
+        'Content-Type': image.contentType,
+        'Content-Length': String(image.body.length),
+        'Cache-Control': 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800',
         'Access-Control-Allow-Origin': '*',
+        'Cross-Origin-Resource-Policy': 'cross-origin',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+        'X-Content-Type-Options': 'nosniff',
       },
     });
-  } catch {
-    return new NextResponse(null, { status: 502 });
-  } finally {
-    clearTimeout(timer);
+  } catch (error) {
+    const status = error instanceof ImageProxyError ? error.status : 502;
+    const message = error instanceof ImageProxyError ? error.message : '图片代理失败';
+    return NextResponse.json({ error: message }, { status, headers: ERROR_HEADERS });
   }
 }

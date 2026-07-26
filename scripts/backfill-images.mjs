@@ -1,10 +1,11 @@
-// 一次性缩略图批量回填：node --experimental-sqlite scripts/backfill-images.mjs [数量]
-import { DatabaseSync } from 'node:sqlite';
-import path from 'node:path';
+// 一次性缩略图批量回填：node scripts/backfill-images.mjs [数量]
+import Database from 'libsql';
 import { fetchOgImage } from '../lib/ogimage.js';
 
 const limit = Number(process.argv[2] || 340);
-const db = new DatabaseSync(path.join(process.cwd(), 'data', 'ai36kr.db'));
+const db = process.env.TURSO_DATABASE_URL
+  ? new Database(process.env.TURSO_DATABASE_URL, { authToken: process.env.TURSO_AUTH_TOKEN })
+  : new Database('data/tidewire.db');
 db.exec('PRAGMA busy_timeout = 10000;');
 
 const rows = db

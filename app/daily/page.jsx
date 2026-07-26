@@ -19,10 +19,10 @@ function attention(p) {
 export default function DailyPage() {
   // 优雅降级：24h 无数据时展示最近 48h
   let windowH = 24;
-  let posts = listPosts({ sort: 'new', sinceHours: 24 });
+  let posts = listPosts({ sort: 'new', sinceHours: 24, limit: 200 });
   if (posts.length === 0) {
     windowH = 48;
-    posts = listPosts({ sort: 'new', sinceHours: 48 });
+    posts = listPosts({ sort: 'new', sinceHours: 48, limit: 200 });
   }
 
   const words = hotWords(posts, 12);

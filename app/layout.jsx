@@ -8,20 +8,20 @@ export const metadata = {
     default: '听潮 TideWire - AI 行业新闻聚合与社区',
     template: '%s - 听潮 TideWire',
   },
-  description: '听潮 TideWire · AI 行业新闻聚合与社区：聚合 25 个权威信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读，观点来自社区。',
+  description: '听潮 TideWire · AI 行业新闻聚合与社区：聚合 37 个真实信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读，观点来自社区。',
   keywords: ['AI新闻', 'AI聚合', '人工智能资讯', 'AI快讯', '大模型', 'AI新品'],
   openGraph: {
     type: 'website',
     siteName: '听潮 TideWire',
     title: '听潮 TideWire - AI 行业新闻聚合与社区',
-    description: '聚合 25 个权威信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。',
+    description: '聚合 37 个真实信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。',
     locale: 'zh_CN',
     images: ['/og-cover.png'],
   },
   twitter: {
     card: 'summary_large_image',
     title: '听潮 TideWire - AI 行业新闻聚合与社区',
-    description: '聚合 25 个权威信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。',
+    description: '聚合 37 个真实信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。',
     images: ['/og-cover.png'],
   },
   alternates: {

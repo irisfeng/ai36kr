@@ -41,7 +41,8 @@ export default function DailyArchivePage({ params }) {
   const rows = db
     .prepare(
       `SELECT p.*, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-       FROM posts p WHERE p.created_at >= ? AND p.created_at < ? ORDER BY p.created_at DESC`
+       FROM posts p WHERE p.created_at >= ? AND p.created_at < ?
+       ORDER BY p.created_at DESC, p.id DESC LIMIT 200`
     )
     .all(start, end);
   const posts = attachReactions(rows);
