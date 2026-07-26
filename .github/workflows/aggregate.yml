@@ -31,6 +31,8 @@ jobs:
         env:
           # LLM 语境翻译通道（火山方舟）；缺失时自动回退 gtx 机翻
           ARK_API_KEY: ${{ secrets.ARK_API_KEY }}
+          # 源健康告警：连续失败自动开 Issue（缺失时静默跳过）
+          REPO_ALERT_TOKEN: ${{ secrets.REPO_ALERT_TOKEN }}
 
       - name: 提交快照
         run: |
