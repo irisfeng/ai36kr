@@ -3,8 +3,8 @@ import Nav from '@/components/Nav';
 import PulseBar from '@/components/PulseBar';
 
 export const metadata = {
-  title: 'AI氪 - AI 行业新闻聚合与社区',
-  description: 'AI 界的 36氪：聚合全网 AI 资讯，观点来自社区。',
+  title: '听潮 - AI 行业新闻聚合与社区',
+  description: '听潮 TideWire · AI 行业新闻聚合与社区：聚合全网 AI 资讯，观点来自社区。',
 };
 
 export default function RootLayout({ children }) {
@@ -24,9 +24,9 @@ export default function RootLayout({ children }) {
         {children}
         <footer className="footer">
           <div className="container footer-inner">
-            <span className="f-logo">AI氪</span>
-            <span>关于 AI氪 · 聚合全网 AI 资讯，观点来自社区</span>
-            <span style={{ marginLeft: 'auto' }}>© 2026 AIKr</span>
+            <span className="f-logo">听潮</span>
+            <span>关于听潮 · 聚合全网 AI 资讯，观点来自社区</span>
+            <span style={{ marginLeft: 'auto' }}>© 2026 听潮 TideWire</span>
           </div>
         </footer>
       </body>

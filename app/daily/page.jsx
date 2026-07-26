@@ -6,7 +6,7 @@ import { timeAgo, dateGroup } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = { title: '今日一页 - AI氪' };
+export const metadata = { title: '今日一页 - 听潮' };
 
 // 综合关注度 = 净投票 + 表情反应总数
 function attention(p) {

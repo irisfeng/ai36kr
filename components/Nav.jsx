@@ -32,7 +32,7 @@ export default function Nav() {
     <header className="nav">
       <div className="container masthead-inner">
         <Link href="/" className="nav-logo">
-          AI氪<span className="kr-dot" /><span className="kr-sub">AI NEWS WIRE</span>
+          听潮<span className="kr-dot" /><span className="kr-sub">AI NEWS WIRE</span>
         </Link>
         <div className="masthead-right">
           <span className="masthead-date" suppressHydrationWarning>{today}</span>

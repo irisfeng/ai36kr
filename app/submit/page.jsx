@@ -1,6 +1,6 @@
 import SubmitForm from '@/components/SubmitForm';
 
-export const metadata = { title: '投稿 - AI氪' };
+export const metadata = { title: '投稿 - 听潮' };
 
 export default function SubmitPage() {
   return (

@@ -4,7 +4,7 @@ import { dateGroup, timeHM } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = { title: '7×24 快讯 - AI氪' };
+export const metadata = { title: '7×24 快讯 - 听潮' };
 
 export default function FlashesPage() {
   const flashes = listFlashes();

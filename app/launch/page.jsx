@@ -7,7 +7,7 @@ import { timeAgo } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = { title: 'AI 新品榜 - AI氪' };
+export const metadata = { title: 'AI 新品榜 - 听潮' };
 
 export default function LaunchPage({ searchParams }) {
   const period = searchParams.period === 'week' ? 'week' : 'today';

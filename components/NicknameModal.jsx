@@ -18,7 +18,7 @@ export default function NicknameModal({ onDone, onCancel }) {
     <div className="modal-mask" onClick={onCancel}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3>取个昵称吧</h3>
-        <p>AI氪无需注册，昵称会保存在你的浏览器里。</p>
+        <p>听潮无需注册，昵称会保存在你的浏览器里。</p>
         <input
           autoFocus
           placeholder="例如：炼丹师小夏"
