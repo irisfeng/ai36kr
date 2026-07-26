@@ -738,3 +738,43 @@ a.product-link:hover { color: var(--red); }
   .subscribe-form button { height: 40px; }
   .daily-subscribe { margin-left: 0; width: 100%; }
 }
+
+/* ---------- 订阅入口 ---------- */
+.nav-subscribe {
+  height: 32px; padding: 0 14px; font-size: 12.5px; font-weight: 600; letter-spacing: 1px;
+  background: var(--red); color: #FCFBF7; border: 1px solid var(--red);
+  transition: background 0.15s, border-color 0.15s;
+}
+.nav-subscribe:hover { background: var(--red-deep); border-color: var(--red-deep); }
+
+.subscribe-modal { width: min(400px, calc(100vw - 40px)); padding: 0; overflow: hidden; }
+.sm-head {
+  display: flex; align-items: center; gap: 12px; padding: 16px 18px;
+  border-bottom: 4px double var(--ink);
+}
+.sm-head b { font-family: var(--serif); font-size: 17px; }
+.sm-head p { font-size: 12px; color: var(--ink-3); margin: 2px 0 0; }
+.sm-head .sharecard-close { margin-left: auto; }
+.sm-seal {
+  width: 36px; height: 36px; background: var(--red); color: #FCFBF7; flex-shrink: 0;
+  font-family: var(--serif); font-weight: 900; font-size: 21px;
+  display: flex; align-items: center; justify-content: center;
+}
+.sm-row { padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.sm-row:last-child { border-bottom: none; }
+.sm-row-title { font-weight: 700; font-size: 13.5px; margin-bottom: 8px; }
+.sm-note { font-size: 11.5px; color: var(--ink-3); margin-top: 8px; }
+
+/* 侧栏订阅卡 */
+.side-subscribe { background: var(--card); }
+.ss-seal {
+  display: inline-flex; width: 18px; height: 18px; background: var(--red); color: #FCFBF7;
+  font-family: var(--serif); font-weight: 900; font-size: 11px;
+  align-items: center; justify-content: center; margin-right: 6px; vertical-align: -2px;
+}
+.ss-pitch { font-size: 12.5px; color: var(--ink-3); margin-bottom: 10px; }
+.ss-links { display: flex; gap: 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.ss-links a { font-size: 12px; color: var(--ink-2); border-bottom: 1px solid var(--line); transition: color 0.15s, border-color 0.15s; }
+.ss-links a:hover { color: var(--red); border-color: var(--red); }
+.side-subscribe .subscribe-form input { width: 100%; margin-bottom: 8px; }
+.side-subscribe .subscribe-form button { width: 100%; }

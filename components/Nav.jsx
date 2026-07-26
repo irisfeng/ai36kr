@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import SubscribeEntry from './SubscribeEntry';
 
 const LINKS = [
   { href: '/', label: '首页' },
@@ -36,6 +37,7 @@ export default function Nav() {
         </Link>
         <div className="masthead-right">
           <span className="masthead-date" suppressHydrationWarning>{today}</span>
+          <SubscribeEntry />
           <form className="nav-search" onSubmit={onSearch}>
             <span className="search-icon">⌕</span>
             <input

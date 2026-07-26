@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import PostCard from '@/components/PostCard';
+import SubscribeForm from '@/components/SubscribeForm';
 import { listPosts, weeklyTopPosts, latestFlashes, topProducts } from '@/lib/queries';
 import { CATEGORIES } from '@/lib/categories';
 import { timeAgo, timeHM } from '@/lib/time';
@@ -86,6 +87,17 @@ export default function HomePage({ searchParams }) {
                 {f.content.length > 46 ? f.content.slice(0, 46) + '…' : f.content}
               </div>
             ))}
+          </div>
+        </section>
+
+        <section className="side-card side-subscribe">
+          <h3 className="side-title"><span className="ss-seal">听</span> 订阅听潮</h3>
+          <p className="ss-pitch">每日 8 点，一页看懂 AI 圈</p>
+          <SubscribeForm />
+          <div className="ss-links">
+            <a href="/rss.xml" target="_blank" rel="noopener noreferrer">RSS</a>
+            <Link href="/daily">今日一页</Link>
+            <Link href="/flashes">快讯</Link>
           </div>
         </section>
 
