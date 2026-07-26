@@ -747,7 +747,11 @@ a.product-link:hover { color: var(--red); }
 }
 .nav-subscribe:hover { background: var(--red-deep); border-color: var(--red-deep); }
 
-.subscribe-modal { width: min(400px, calc(100vw - 40px)); padding: 0; overflow: hidden; }
+.subscribe-modal {
+  width: min(400px, calc(100vw - 40px)); padding: 0; overflow-y: auto;
+  max-height: 88vh;
+}
+.sm-mark { display: inline-block; width: 8px; height: 8px; background: var(--red); margin-right: 8px; }
 .sm-head {
   display: flex; align-items: center; gap: 12px; padding: 16px 18px;
   border-bottom: 4px double var(--ink);

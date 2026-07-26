@@ -34,19 +34,19 @@ export default function SubscribeEntry() {
           <button type="button" className="sharecard-close" onClick={() => setOpen(false)}>×</button>
         </div>
         <div className="sm-row">
-          <div className="sm-row-title">📮 邮箱日报</div>
+          <div className="sm-row-title"><span className="sm-mark" />邮箱日报</div>
           <SubscribeForm />
           <p className="sm-note">热词 + 最受关注 Top3 + 分类收录，随时一键退订</p>
         </div>
         <div className="sm-row">
-          <div className="sm-row-title">📡 RSS</div>
+          <div className="sm-row-title"><span className="sm-mark" />RSS</div>
           <button type="button" className="share-btn" onClick={copyRss}>
             {copied ? '已复制 ✓' : '复制 RSS 地址'}
           </button>
           <p className="sm-note">用 Feedly / Folo / Inoreader 订阅全文流</p>
         </div>
         <div className="sm-row">
-          <div className="sm-row-title">▦ 分享卡片</div>
+          <div className="sm-row-title"><span className="sm-mark" />分享卡片</div>
           <p className="sm-note">每篇文章详情页可生成带二维码的报纸风海报，长按保存发朋友圈</p>
         </div>
       </div>
