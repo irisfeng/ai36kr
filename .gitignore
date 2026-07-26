@@ -1,5 +1,6 @@
 node_modules/
 .next/
-data/
+data/*
+!data/snapshot.json
 .DS_Store
 .vercel

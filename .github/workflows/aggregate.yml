@@ -1,0 +1,42 @@
+name: aggregate
+
+# 定时聚合全部 RSS 源并提交内容快照（data/snapshot.json）：
+# Vercel 关联仓库后，快照提交会触发自动部署，新部署自带最新内容；
+# serverless 冷启动时从快照水合，站点永不空白。
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: 聚合全部信息源并导出快照
+        run: node scripts/aggregate.mjs
+        timeout-minutes: 10
+
+      - name: 提交快照
+        run: |
+          git config user.name "tidewire-bot"
+          git config user.email "tidewire-bot@users.noreply.github.com"
+          git add data/snapshot.json
+          if git diff --cached --quiet; then
+            echo "内容无变化，跳过提交"
+          else
+            git commit -m "chore(snapshot): 定时聚合 $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
