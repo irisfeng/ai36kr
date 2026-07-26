@@ -35,7 +35,7 @@ npm run build && npm start
 ## 功能
 
 - **首页 `/`**：文章流（热度 / 最新 / 深度长读三个 tab）+ 侧栏（快讯 5 条、周热榜 Top5、新品榜 Top3、分类导航）。热度算法：`score = (up - down) / pow(age_hours + 2, 1.5)`
-- **RSS 聚合**：每 10 分钟从 25 个真实信息源抓取（文章 22 源 + 快讯 2 源 + 新品 1 源），按 URL 去重入库，自动分类归一，详情页带「阅读原文」外链。**全站无任何内置种子/虚构数据**：文章、快讯、新品全部来自真实源，评论与投票完全由社区产生
+- **RSS 聚合**：每 10 分钟从 37 个真实信息源抓取（文章 33 源 + 快讯 3 源 + 新品 1 源），按 URL 去重入库，自动分类归一，详情页带「阅读原文」外链。**全站无任何内置种子/虚构数据**：文章、快讯、新品全部来自真实源，评论与投票完全由社区产生
 - **今日一页 `/daily`**：一页看懂今天 AI 圈 —— 日期与条数统计、热词云、最受关注 Top3、按分类分组的条目流；24h 无数据时自动降级到 48h
 - **AI 脉搏条**：导航下方细横条，展示今日新增条数、今日热词 Top8（可点击搜索）、各聚合源在线状态（绿/灰点）
 - **表情反应**：每篇文章可点 🔥热 / 🤯炸 / 💡妙 / 🧐疑，低门槛互动，幂等切换（再点取消），与投票互不干扰
@@ -50,22 +50,23 @@ npm run build && npm start
 通过 `rss-parser` 解析 RSS/Atom。信息源清单借鉴了 GitHub 热门开源聚合项目（[SuYxh/ai-news-aggregator](https://github.com/SuYxh/ai-news-aggregator) 的 OPML 精选、newsnow、aihot-site 等），全部经 curl 逐个实测可用（2026-07；机器之心反爬、rsshub.app 403、Anthropic/Meta/The Batch 无可用 RSS，均已剔除）。
 其中 HN / Ars / MIT TR / 36氪 / 爱范儿 / InfoQ / SuperTechFans / 宝玉 / 阮一峰 / Simon Willison 为泛科技源，只放行命中 AI 专属词表的条目（`lib/classify.js` 的 `isAiRelated` 闸门；词表刻意排除「融资/收购」等通用财经词，避免非 AI 财经新闻混入）；长文源（量子位/MIT TR/BAIR/Import AI/Interconnects 等）自动进「深度长读」tab。
 
-**文章源（22）**
+**文章源（33）**
 
 | 类型 | 源 |
 | --- | --- |
 | 中文媒体 | 36氪、量子位、爱范儿、InfoQ、SuperTechFans、宝玉、阮一峰 |
 | 英文媒体 | TechCrunch AI、The Verge AI、Ars Technica、MIT Technology Review、VentureBeat AI、Hacker News |
 | 官方/研究 | OpenAI、Google DeepMind、Google Research、Hugging Face、Microsoft Research、BAIR（伯克利） |
-| 深度专栏 | Import AI（Jack Clark）、Interconnects（Nathan Lambert）、Simon Willison |
+| 深度专栏 | Import AI（Jack Clark）、Interconnects（Nathan Lambert）、Simon Willison、AI News（smol.ai）、Last Week in AI、Ahead of AI（Raschka）、One Useful Thing（Mollick）、Latent Space、Lilian Weng、Chip Huyen、Eugene Yan、Hamel Husain、Meta Engineering |
+| 中文补充 | 钛媒体 |
 
-**快讯源（2）**：Readhub、36氪快讯（经 RSSHub 公共实例 `rsshub.bestblogs.dev`），自动打标 发布/融资/政策/数据/人事，附原文链接
+**快讯源（3）**：Readhub、36氪快讯、钛媒体快讯（经 RSSHub 公共实例 `rsshub.bestblogs.dev`），自动打标 发布/融资/政策/数据/人事，附原文链接
 
 **新品源（1）**：Product Hunt（AI 分类 Atom feed），自动提取产品名与 tagline，附 Product Hunt 链接
 
 **持续更新机制（三层）**：① GitHub Actions 每 30 分钟聚合全部源并提交内容快照（`data/snapshot.json`），快照提交触发 Vercel 自动部署，新实例冷启动从快照水合；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 source_status 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。函数区域 `hkg1`（香港），兼顾中文源可达性与国内访问延迟。
 
-**内容质量机制**：泛科技源 AI 关键词闸门（见上）；跨源去重——标题归一化唯一索引（`title_norm`，抹平标点/空白/大小写差异，同一新闻多源报道只留先到者）；旧内容自动清理（文章留 30 天、快讯留 7 天，有评论的保留，孤儿投票/反应一并清理）；缩略图双重获取（RSS 内嵌图 + og:image 回填，logo/品牌图视为无图）。
+**内容质量机制**：泛科技源 AI 关键词闸门（见上）；跨源去重——标题归一化唯一索引（`title_norm`，抹平标点/空白/大小写差异，同一新闻多源报道只留先到者）；旧内容自动清理（文章留 30 天（深度长文 90 天）、快讯留 7 天，有评论的保留，孤儿投票/反应一并清理）；缩略图双重获取（RSS 内嵌图 + og:image 回填，logo/品牌图视为无图）。
 
 **刷新机制**：`instrumentation.js` 的 `register()` 在 Node runtime 启动后立即抓一轮，之后 `setInterval` 每 10 分钟一轮；另外 `GET /api/posts` 时若距上次抓取超过 10 分钟会触发一次后台补抓（不阻塞响应）。单源失败不影响整体（`Promise.allSettled`），每源抓取时间/状态记录于 `source_status` 表，供脉搏条展示。
 
