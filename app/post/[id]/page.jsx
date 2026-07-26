@@ -47,7 +47,7 @@ export default function PostPage({ params }) {
         <h1>{post.title_zh || post.title}</h1>
         {post.title_zh ? <p className="article-title-orig">{post.title}</p> : null}
         <div className="article-summary">
-          <b>摘要 · </b>{post.summary}
+          <b>摘要 · </b>{post.summary_zh || post.summary}
         </div>
         {post.is_external && post.url ? (
           <a className="ext-link-btn" href={post.url} target="_blank" rel="noopener noreferrer">

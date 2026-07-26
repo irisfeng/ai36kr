@@ -6,7 +6,7 @@ import db from '../lib/db.js';
 
 const LIMITS = { posts: 600, flashes: 300, products: 100 };
 const COLS = {
-  posts: 'id, title, title_norm, title_zh, ext_score, source, category, summary, content, is_deep, up, down, created_at, url, is_external, source_home, image_url',
+  posts: 'id, title, title_norm, title_zh, summary_zh, ext_score, source, category, summary, content, is_deep, up, down, created_at, url, is_external, source_home, image_url',
   flashes: 'id, content, tag, up, created_at, url, source',
   products: 'id, name, tagline, description, category, up, created_at, url, image_url',
 };

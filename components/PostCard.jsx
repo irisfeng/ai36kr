@@ -23,7 +23,7 @@ export default function PostCard({ post }) {
           <Link href={`/post/${post.id}`}>{post.title_zh || post.title}</Link>
         </h2>
         {post.title_zh ? <p className="post-title-orig">{post.title}</p> : null}
-        <p className="post-summary">{post.summary}</p>
+        <p className="post-summary">{post.summary_zh || post.summary}</p>
         <div className="post-actions">
           <VoteButtons targetType="post" targetId={post.id} initialUp={post.up} initialDown={post.down} />
           <Link href={`/post/${post.id}#comments`} className="comment-link">
