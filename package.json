@@ -9,10 +9,15 @@
     "start": "next start"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "libsql": "^0.5.29",
     "next": "14.2.33",
+    "qrcode": "^1.5.4",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.0"
   }
 }

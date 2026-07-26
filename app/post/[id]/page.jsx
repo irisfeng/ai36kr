@@ -3,6 +3,7 @@ import VoteButtons from '@/components/VoteButtons';
 import ReactionBar from '@/components/ReactionBar';
 import CoverImage from '@/components/CoverImage';
 import ShareButtons from '@/components/ShareButtons';
+import ShareCard from '@/components/ShareCard';
 import CommentSection from '@/components/CommentSection';
 import { getPost, listComments } from '@/lib/queries';
 import { coverFor } from '@/lib/categories';
@@ -68,6 +69,7 @@ export default function PostPage({ params }) {
           </span>
           <span className="article-share">
             <ShareButtons title={post.title} text={post.summary} path={`/post/${post.id}`} />
+            <ShareCard post={post} />
           </span>
         </div>
       </article>

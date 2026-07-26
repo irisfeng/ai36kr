@@ -669,3 +669,47 @@ a.product-link:hover { color: var(--red); }
 .daily-nav { display: flex; justify-content: space-between; margin-top: 14px; font-size: 13px; }
 .daily-nav a { color: var(--ink-2); border-bottom: 1px solid var(--line); padding-bottom: 1px; transition: color 0.15s, border-color 0.15s; }
 .daily-nav a:hover { color: var(--red); border-color: var(--red); }
+
+/* ---------- 微信分享卡片 ---------- */
+.sharecard-modal {
+  background: var(--card); border: 1px solid var(--ink);
+  width: min(420px, calc(100vw - 32px)); max-height: 92vh; overflow-y: auto;
+  padding: 16px; box-shadow: 8px 8px 0 rgba(25, 24, 19, 0.18);
+}
+.sharecard-modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 15px; }
+.sharecard-close { border: none; background: none; font-size: 22px; line-height: 1; color: var(--ink-3); }
+.sharecard-close:hover { color: var(--red); }
+.sharecard-poster { width: 100%; display: block; border: 1px solid var(--line); }
+.sharecard-hint { text-align: center; font-size: 12.5px; color: var(--ink-3); margin-top: 10px; }
+
+.sharecard {
+  width: 100%; background: var(--paper); color: var(--ink);
+  border: 1px solid var(--ink); padding: 20px 20px 16px;
+  font-family: var(--sans);
+}
+.sc-head { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 4px double var(--ink); }
+.sc-seal {
+  width: 34px; height: 34px; background: var(--red); color: #FCFBF7;
+  font-family: var(--serif); font-weight: 900; font-size: 20px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sc-brand { font-family: var(--serif); font-weight: 900; font-size: 22px; letter-spacing: 2px; display: flex; flex-direction: column; line-height: 1.15; }
+.sc-wire { font-family: var(--mono); font-weight: 400; font-size: 7.5px; letter-spacing: 2.5px; color: var(--ink-3); }
+.sc-date { margin-left: auto; font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); }
+.sc-cover { position: relative; margin: 14px 0 0; aspect-ratio: 21 / 9; overflow: hidden; background: linear-gradient(150deg, #2B2615 0%, #161307 100%); }
+.sc-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sc-cover-plain::before { content: 'AI'; position: absolute; right: 10px; top: 6px; font-family: var(--serif); font-size: 52px; font-weight: 900; color: rgba(252, 251, 247, 0.13); }
+.sc-cat { position: absolute; left: 10px; bottom: 10px; background: rgba(25, 24, 19, 0.6); color: #FCFBF7; font-family: var(--serif); font-weight: 900; font-size: 13px; padding: 2px 8px; }
+.sc-body { padding: 14px 2px 12px; }
+.sc-title { font-family: var(--serif); font-weight: 900; font-size: 21px; line-height: 1.45; }
+.sc-orig { font-size: 11px; color: var(--ink-3); margin-top: 5px; line-height: 1.5; }
+.sc-summary {
+  font-size: 12.5px; color: var(--ink-2); line-height: 1.75; margin-top: 10px;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.sc-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-top: 10px; letter-spacing: 0.5px; }
+.sc-foot { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--ink); padding-top: 12px; }
+.sc-qr { width: 64px; height: 64px; flex-shrink: 0; }
+.sc-foot-text { display: flex; flex-direction: column; gap: 3px; }
+.sc-foot-text b { font-family: var(--serif); font-size: 14px; }
+.sc-foot-text span { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); }
