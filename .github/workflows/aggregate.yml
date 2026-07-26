@@ -28,6 +28,9 @@ jobs:
       - name: 聚合全部信息源并导出快照
         run: node scripts/aggregate.mjs
         timeout-minutes: 10
+        env:
+          # rsshub.bestblogs.dev 证书链不完整，Node 严格校验会拒连；仅本步骤放宽（只读公开 RSS）
+          NODE_TLS_REJECT_UNAUTHORIZED: '0'
 
       - name: 提交快照
         run: |

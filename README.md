@@ -63,6 +63,10 @@ npm run build && npm start
 
 **新品源（1）**：Product Hunt（AI 分类 Atom feed），自动提取产品名与 tagline，附 Product Hunt 链接
 
+**持续更新机制（三层）**：① GitHub Actions 每 30 分钟聚合全部源并提交内容快照（`data/snapshot.json`），快照提交触发 Vercel 自动部署，新实例冷启动从快照水合；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 source_status 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。函数区域 `hkg1`（香港），兼顾中文源可达性与国内访问延迟。
+
+**内容质量机制**：泛科技源 AI 关键词闸门（见上）；跨源去重——标题归一化唯一索引（`title_norm`，抹平标点/空白/大小写差异，同一新闻多源报道只留先到者）；旧内容自动清理（文章留 30 天、快讯留 7 天，有评论的保留，孤儿投票/反应一并清理）；缩略图双重获取（RSS 内嵌图 + og:image 回填，logo/品牌图视为无图）。
+
 **刷新机制**：`instrumentation.js` 的 `register()` 在 Node runtime 启动后立即抓一轮，之后 `setInterval` 每 10 分钟一轮；另外 `GET /api/posts` 时若距上次抓取超过 10 分钟会触发一次后台补抓（不阻塞响应）。单源失败不影响整体（`Promise.allSettled`），每源抓取时间/状态记录于 `source_status` 表，供脉搏条展示。
 
 **入库规则**：按 `url` 部分唯一索引去重（`INSERT OR IGNORE`）；`pubDate` 转 ISO 存 `created_at`；摘要剥 HTML 截 300 字；`lib/classify.js` 按关键词把条目归一到现有分类；聚合条目 `is_external=1`，站内投稿为 0。

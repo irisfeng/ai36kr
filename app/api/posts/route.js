@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { listPosts } from '@/lib/queries';
 import { refreshIfStale } from '@/lib/rss';
+import { normalizeTitle } from '@/lib/classify';
 import db from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -47,9 +48,9 @@ export async function POST(request) {
 
   try {
     const r = db.prepare(
-      `INSERT INTO posts (title, source, category, summary, content, is_deep, up, down, created_at, url)
-       VALUES (?, ?, ?, ?, ?, 0, 0, 0, ?, ?)`
-    ).run(title, source, category, summary, summary, new Date().toISOString(), url || null);
+      `INSERT INTO posts (title, title_norm, source, category, summary, content, is_deep, up, down, created_at, url)
+       VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?)`
+    ).run(title, normalizeTitle(title), source, category, summary, summary, new Date().toISOString(), url || null);
     return NextResponse.json({ id: Number(r.lastInsertRowid) }, { status: 201 });
   } catch (e) {
     if (String(e?.message || '').includes('UNIQUE')) {
