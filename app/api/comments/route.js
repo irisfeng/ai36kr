@@ -3,6 +3,7 @@ import { listComments } from '@/lib/queries';
 import db from '@/lib/db';
 import { consumeRequestRateLimit } from '@/lib/rate-limit';
 import { rateLimitExceeded, writeJson } from '@/lib/write-response';
+import { moderateContent } from '@/lib/moderate';
 
 export const dynamic = 'force-dynamic';
 const COMMENT_LIMIT = { scope: 'comments', limit: 20, windowMs: 5 * 60 * 1000 };
@@ -37,6 +38,12 @@ export async function POST(request) {
   }
   const post = db.prepare('SELECT id FROM posts WHERE id = ?').get(postId);
   if (!post) return writeJson({ error: '文章不存在' }, { status: 404, rateLimit: requestLimit });
+
+  // 内容审核：本地敏感词 → Ark LLM 快审
+  const verdict = await moderateContent(`${nickname}\n${content}`);
+  if (!verdict.ok) {
+    return writeJson({ error: `未通过审核：${verdict.reason}` }, { status: 422, rateLimit: requestLimit });
+  }
 
   if (parentId) {
     const parent = db.prepare('SELECT id, parent_id FROM comments WHERE id = ? AND post_id = ?').get(parentId, postId);

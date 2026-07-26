@@ -6,6 +6,7 @@ import db from '@/lib/db';
 import { consumeRequestRateLimit } from '@/lib/rate-limit';
 import { rateLimitExceeded, writeJson } from '@/lib/write-response';
 import { PaginationError, parsePostPagination } from '@/lib/pagination';
+import { moderateContent } from '@/lib/moderate';
 
 export const dynamic = 'force-dynamic';
 const POST_LIMIT = { scope: 'posts', limit: 5, windowMs: 10 * 60 * 1000 };
@@ -73,6 +74,12 @@ export async function POST(request) {
 
   if (!title || !summary) {
     return writeJson({ error: '标题和摘要不能为空' }, { status: 400, rateLimit: requestLimit });
+  }
+
+  // 内容审核：本地敏感词 → Ark LLM 快审
+  const verdict = await moderateContent(`${title}\n${summary}`);
+  if (!verdict.ok) {
+    return writeJson({ error: `未通过审核：${verdict.reason}` }, { status: 422, rateLimit: requestLimit });
   }
 
   let source = '社区投稿';
