@@ -31,6 +31,8 @@ jobs:
         env:
           # rsshub.bestblogs.dev 证书链不完整，Node 严格校验会拒连；仅本步骤放宽（只读公开 RSS）
           NODE_TLS_REJECT_UNAUTHORIZED: '0'
+          # LLM 语境翻译通道（火山方舟）；缺失时自动回退 gtx 机翻
+          ARK_API_KEY: ${{ secrets.ARK_API_KEY }}
 
       - name: 提交快照
         run: |
