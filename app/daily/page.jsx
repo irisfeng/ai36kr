@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ShareButtons from '@/components/ShareButtons';
 import { listPosts } from '@/lib/queries';
 import { hotWords } from '@/lib/keywords';
 import { CATEGORIES } from '@/lib/categories';
@@ -6,7 +7,10 @@ import { timeAgo, dateGroup } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = { title: '今日一页 - 听潮' };
+export const metadata = {
+  title: '今日一页',
+  description: '一页看懂今天的 AI 圈：今日热词、最受关注 Top3、按分类分组的 24 小时收录。',
+};
 
 // 综合关注度 = 净投票 + 表情反应总数
 function attention(p) {
@@ -46,6 +50,13 @@ export default function DailyPage() {
           {dateGroup(new Date().toISOString())} · 最近 {windowH} 小时收录 {posts.length} 条
           {windowH === 48 && '（24 小时内暂无更新，已扩展至 48 小时）'}
         </p>
+        <div className="daily-share">
+          <ShareButtons
+            title={`今日 AI 一页 · ${dateGroup(new Date().toISOString())}`}
+            text={`今天 AI 圈：${posts.length} 条收录，热词 ${words.slice(0, 3).map((w) => w.word).join(' / ')}`}
+            path="/daily"
+          />
+        </div>
       </div>
 
       {words.length > 0 && (

@@ -1,0 +1,13 @@
+{
+  "name": "听潮 TideWire - AI 行业新闻聚合与社区",
+  "short_name": "听潮",
+  "description": "聚合 25 个权威信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F3ED",
+  "theme_color": "#C23B22",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

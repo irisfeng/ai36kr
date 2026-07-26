@@ -2,12 +2,33 @@ import { notFound } from 'next/navigation';
 import VoteButtons from '@/components/VoteButtons';
 import ReactionBar from '@/components/ReactionBar';
 import CoverImage from '@/components/CoverImage';
+import ShareButtons from '@/components/ShareButtons';
 import CommentSection from '@/components/CommentSection';
 import { getPost, listComments } from '@/lib/queries';
 import { coverFor } from '@/lib/categories';
 import { timeAgo } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }) {
+  const post = getPost(Number(params.id));
+  if (!post) return { title: '文章不存在' };
+  const description = (post.summary || post.title).slice(0, 120);
+  const images = post.image_url ? [post.image_url] : ['/og-cover.png'];
+  return {
+    title: post.title,
+    description,
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description,
+      images,
+      publishedTime: post.created_at,
+      section: post.category,
+    },
+    twitter: { card: 'summary_large_image', title: post.title, description, images },
+  };
+}
 
 export default function PostPage({ params }) {
   const post = getPost(Number(params.id));
@@ -43,6 +64,9 @@ export default function PostPage({ params }) {
           <ReactionBar postId={post.id} initialCounts={post.reactions || {}} size="lg" />
           <span style={{ fontSize: 13, color: 'var(--ink-3)' }}>
             {post.comment_count} 条评论 · 观点来自社区
+          </span>
+          <span className="article-share">
+            <ShareButtons title={post.title} text={post.summary} path={`/post/${post.id}`} />
           </span>
         </div>
       </article>
