@@ -1,6 +1,7 @@
 import './globals.css';
 import Nav from '@/components/Nav';
 import PulseBar from '@/components/PulseBar';
+import SubscribeForm from '@/components/SubscribeForm';
 
 export const metadata = {
   metadataBase: new URL('https://aikr.shddai.net'),
@@ -57,7 +58,10 @@ export default function RootLayout({ children }) {
           <div className="container footer-inner">
             <span className="f-logo">听潮</span>
             <span>关于听潮 · 聚合全网 AI 资讯，观点来自社区</span>
-            <span style={{ marginLeft: 'auto' }}>© 2026 听潮 TideWire</span>
+            <span className="footer-subscribe">
+              <SubscribeForm compact />
+            </span>
+            <span>© 2026 听潮 TideWire</span>
           </div>
         </footer>
       </body>

@@ -18,6 +18,9 @@ export default function DailyView({
         <p suppressHydrationWarning>{headDesc}</p>
         <div className="daily-share">
           <ShareButtons title={shareTitle} text={shareText} path={sharePath} />
+          <span className="daily-subscribe">
+            <SubscribeForm compact />
+          </span>
         </div>
         {(navPrev || navNext) && (
           <nav className="daily-nav">

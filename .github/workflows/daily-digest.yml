@@ -1,0 +1,30 @@
+name: daily-digest
+
+# 每日 08:00（北京时间）向已确认订阅者发送「今日 AI 一页」邮件
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 00:00 UTC = 08:00 北京时间
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: 发送日报邮件
+        run: node scripts/send-daily.mjs
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}

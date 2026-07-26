@@ -48,6 +48,7 @@ npm run build && npm start
 - **新品榜 `/launch`**：今日 / 本周榜单，前三名金/银/铜徽章，可投票
 - **投稿 `/submit`**：提交标题 / 链接 / 摘要 / 分类，直接进列表
 - **搜索**：顶导航搜索框，标题 / 摘要 LIKE 查询
+- **日报邮件订阅**：页脚与 `/daily` 页表单订阅，确认邮件双选入（double opt-in），每日 08:00（北京时间）GitHub Actions 推送「今日 AI 一页」（热词 + Top3 + 分类收录），一键退订；发信走 Resend（`mail.shddai.net` 已验证域），密钥 `RESEND_API_KEY`
 
 ## 信息源聚合
 
