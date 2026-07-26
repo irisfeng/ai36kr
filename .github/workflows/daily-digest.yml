@@ -6,7 +6,8 @@ on:
     - cron: '0 0 * * *'  # 00:00 UTC = 08:00 北京时间
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: write
 
 jobs:
   send:
@@ -28,3 +29,21 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
+      - name: 生成今日头条海报
+        run: node scripts/daily-card.mjs
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
+      - name: 提交海报
+        run: |
+          git config user.name "tidewire-bot"
+          git config user.email "tidewire-bot@users.noreply.github.com"
+          git add public/daily-card.html
+          if git diff --cached --quiet; then
+            echo "海报无变化"
+          else
+            git commit -m "chore(card): 今日头条海报 $(date -u +'%Y-%m-%d')"
+            git push
+          fi

@@ -19,6 +19,9 @@ export default function DailyView({
         <p suppressHydrationWarning>{headDesc}</p>
         <div className="daily-share">
           <ShareButtons title={shareTitle} text={shareText} path={sharePath} />
+          <a className="share-btn" href="/daily-card.html" target="_blank" rel="noopener noreferrer">
+            今日头条海报 ↗
+          </a>
           <span className="daily-subscribe">
             <SubscribeForm compact />
           </span>
