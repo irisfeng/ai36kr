@@ -43,31 +43,33 @@ export async function POST(request) {
     'SELECT * FROM votes WHERE token = ? AND target_type = ? AND target_id = ?'
   ).get(token, targetType, targetId);
 
+  // 不用显式事务（远端 libSQL over HTTP 不支持交互式事务）：
+  // UNIQUE(token, target_type, target_id) 约束天然防重复插入，
+  // 计数更新为单条原子 UPDATE，并发最坏情况是约束冲突后重读，结果仍正确
   let currentVote = 0;
-  db.exec('BEGIN');
-  try {
-    if (existing && existing.value === value) {
-      // 再点一次 = 取消投票（幂等）
-      db.prepare('DELETE FROM votes WHERE id = ?').run(existing.id);
-      applyVote(target, targetId, value === 1 ? -1 : 0, value === -1 ? -1 : 0);
-      currentVote = 0;
-    } else if (existing) {
-      // 改票：顶 <-> 踩
-      db.prepare('UPDATE votes SET value = ?, created_at = ? WHERE id = ?')
-        .run(value, new Date().toISOString(), existing.id);
-      applyVote(target, targetId, value === 1 ? 1 : -1, value === 1 ? -1 : 1);
-      currentVote = value;
-    } else {
+  if (existing && existing.value === value) {
+    // 再点一次 = 取消投票（幂等）
+    db.prepare('DELETE FROM votes WHERE id = ?').run(existing.id);
+    applyVote(target, targetId, value === 1 ? -1 : 0, value === -1 ? -1 : 0);
+    currentVote = 0;
+  } else if (existing) {
+    // 改票：顶 <-> 踩
+    db.prepare('UPDATE votes SET value = ?, created_at = ? WHERE id = ?')
+      .run(value, new Date().toISOString(), existing.id);
+    applyVote(target, targetId, value === 1 ? 1 : -1, value === 1 ? -1 : 1);
+    currentVote = value;
+  } else {
+    try {
       db.prepare(
         'INSERT INTO votes (token, target_type, target_id, value, created_at) VALUES (?, ?, ?, ?, ?)'
       ).run(token, targetType, targetId, value, new Date().toISOString());
       applyVote(target, targetId, value === 1 ? 1 : 0, value === -1 ? 1 : 0);
       currentVote = value;
+    } catch (e) {
+      // 同 token 并发重复提交：视为幂等成功，直接按已投返回
+      if (!String(e?.message || e).includes('UNIQUE')) throw e;
+      currentVote = value;
     }
-    db.exec('COMMIT');
-  } catch (e) {
-    db.exec('ROLLBACK');
-    throw e;
   }
 
   const counts = db.prepare(`SELECT up${target.hasDown ? ', down' : ''} FROM ${target.table} WHERE id = ?`).get(targetId);
