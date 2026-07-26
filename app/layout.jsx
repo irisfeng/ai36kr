@@ -7,6 +7,13 @@ export const metadata = {
   description: '听潮 TideWire · AI 行业新闻聚合与社区：聚合全网 AI 资讯，观点来自社区。',
 };
 
+// viewport-fit=cover：配合安全区 env()，iPhone 刘海/手势条不留白边
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-CN">

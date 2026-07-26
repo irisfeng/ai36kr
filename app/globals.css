@@ -612,17 +612,36 @@ a.product-link:hover { color: var(--red); }
   .masthead-date { display: none; }
   .masthead-right { margin-left: auto; }
   .nav-search input, .nav-search input:focus { width: 148px; }
-  .nav-inner { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .nav-links a { white-space: nowrap; }
+  .nav-inner { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-links a { white-space: nowrap; padding: 10px 16px; }
   .post-card { grid-template-columns: 1fr; gap: 12px; }
-  .post-cover { min-height: 68px; }
+  /* 封面统一 2:1，og 图不再忽大忽小 */
+  .post-cover { aspect-ratio: 2 / 1; min-height: 0; }
   .post-cover::before { font-size: 32px; }
   .article h1 { font-size: 25px; }
   .article-content p { font-size: 15.5px; }
   .page-head h1 { font-size: 26px; }
   .pulse-sources { display: none; }
   .pulse-count { display: none; }
+  /* 热词可横滑（原来被裁剪够不着） */
+  .pulse-words { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; mask-image: none; -webkit-mask-image: none; }
+  .pulse-words::-webkit-scrollbar { display: none; }
+  .pulse-word { padding: 4px 0; }
   .daily-top-grid { grid-template-columns: 1fr; }
   .daily-item { flex-direction: column; gap: 2px; }
   .daily-item-meta { margin-left: 0; }
+  /* 触摸目标 ≥40px */
+  .vote-btn, .reaction-btn { min-height: 40px; padding: 6px 12px; }
+  .tabs a { padding: 12px 16px; }
+  /* 长 URL / 长英文串防横向溢出 */
+  .article-content p, .post-summary, .flash-content, .daily-item { overflow-wrap: anywhere; }
+  /* iOS 输入字号 <16px 会自动放大页面，统一抬到 16px */
+  input, textarea, select { font-size: 16px !important; }
+  /* 详情页「阅读原文」全宽大按钮 */
+  .ext-link-btn { display: flex; justify-content: center; }
+  /* 弹窗不超出屏幕 */
+  .modal { width: min(340px, calc(100vw - 40px)); }
+  /* 底部手势条安全区 */
+  .footer-inner { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
 }
