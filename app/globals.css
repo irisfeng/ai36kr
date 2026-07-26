@@ -717,14 +717,15 @@ a.product-link:hover { color: var(--red); }
 /* ---------- 日报订阅 ---------- */
 .subscribe-form { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .subscribe-form input {
-  height: 34px; width: 180px; padding: 0 10px; font-size: 12.5px;
+  height: 36px; width: 180px; padding: 0 10px; font-size: 12.5px; line-height: 1;
   border: 1px solid var(--line); background: var(--card); outline: none;
+  appearance: none; border-radius: 0;
 }
 .subscribe-form input:focus { border-color: var(--ink); }
 .subscribe-form button {
-  height: 34px; padding: 0 14px; font-size: 12.5px; font-weight: 600;
+  height: 36px; padding: 0 14px; font-size: 12.5px; font-weight: 600; line-height: 1;
   background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
-  transition: background 0.15s;
+  transition: background 0.15s; appearance: none; border-radius: 0;
 }
 .subscribe-form button:hover { background: var(--red); border-color: var(--red); }
 .subscribe-form button:disabled { opacity: 0.5; cursor: wait; }
@@ -769,8 +770,7 @@ a.product-link:hover { color: var(--red); }
 .sm-row-title { font-weight: 700; font-size: 13.5px; margin-bottom: 8px; }
 .sm-note { font-size: 11.5px; color: var(--ink-3); margin-top: 8px; }
 
-/* 侧栏订阅卡 */
-.side-subscribe { background: var(--card); }
+/* 侧栏订阅卡：与其他 side-card 同款纸面，不单独铺白底 */
 .ss-seal {
   display: inline-flex; width: 18px; height: 18px; background: var(--red); color: #FCFBF7;
   font-family: var(--serif); font-weight: 900; font-size: 11px;
@@ -782,3 +782,6 @@ a.product-link:hover { color: var(--red); }
 .ss-links a:hover { color: var(--red); border-color: var(--red); }
 .side-subscribe .subscribe-form input { width: 100%; margin-bottom: 8px; }
 .side-subscribe .subscribe-form button { width: 100%; }
+
+/* 订阅弹层内：抵消 .modal 通用输入框的下边距，保证与按钮同行等高 */
+.subscribe-modal .subscribe-form input { margin-bottom: 0; }
