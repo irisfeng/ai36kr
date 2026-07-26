@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ShareButtons from '@/components/ShareButtons';
+import SubscribeForm from '@/components/SubscribeForm';
 import { timeAgo } from '@/lib/time';
 
 // 「今日一页」共用视图：/daily（24h 窗口）与 /daily/[date]（日历日归档）复用
