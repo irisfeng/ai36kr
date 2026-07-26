@@ -43,7 +43,8 @@ export default function PostPage({ params }) {
           {post.is_deep ? <span className="post-deep-tag">深度长读</span> : null}
           <span suppressHydrationWarning>{timeAgo(post.created_at)}</span>
         </div>
-        <h1>{post.title}</h1>
+        <h1>{post.title_zh || post.title}</h1>
+        {post.title_zh ? <p className="article-title-orig">{post.title}</p> : null}
         <div className="article-summary">
           <b>摘要 · </b>{post.summary}
         </div>

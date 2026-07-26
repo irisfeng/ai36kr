@@ -75,7 +75,7 @@ export default function HomePage({ searchParams }) {
             {hot5.map((p, i) => (
               <div className="rank-item" key={p.id}>
                 <span className="rank-num">{i + 1}</span>
-                <Link href={`/post/${p.id}`}>{p.title}</Link>
+                <Link href={`/post/${p.id}`}>{p.title_zh || p.title}</Link>
                 <span className="rank-heat">{p.up - p.down}</span>
               </div>
             ))}

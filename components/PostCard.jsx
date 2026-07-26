@@ -20,8 +20,9 @@ export default function PostCard({ post }) {
           {(post.up - post.down) >= 150 ? <span className="hot-badge">HOT</span> : null}
         </div>
         <h2 className="post-title">
-          <Link href={`/post/${post.id}`}>{post.title}</Link>
+          <Link href={`/post/${post.id}`}>{post.title_zh || post.title}</Link>
         </h2>
+        {post.title_zh ? <p className="post-title-orig">{post.title}</p> : null}
         <p className="post-summary">{post.summary}</p>
         <div className="post-actions">
           <VoteButtons targetType="post" targetId={post.id} initialUp={post.up} initialDown={post.down} />
