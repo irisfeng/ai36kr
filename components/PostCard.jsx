@@ -3,12 +3,17 @@ import VoteButtons from './VoteButtons';
 import ReactionBar from './ReactionBar';
 import CoverImage from './CoverImage';
 import { timeAgo } from '@/lib/time';
-import { coverFor } from '@/lib/categories';
+import { coverFor, coverInk } from '@/lib/categories';
 
 export default function PostCard({ post }) {
   return (
     <article className="post-card">
-      <Link href={`/post/${post.id}`} className="post-cover" style={{ background: coverFor(post) }}>
+      <Link
+        href={`/post/${post.id}`}
+        className="post-cover"
+        data-wm={(post.category || 'AI')[0]}
+        style={{ background: coverFor(post), '--wm-ink': coverInk(post) }}
+      >
         <CoverImage src={post.image_url} alt={post.title} className="cover-img" />
         <span className="cover-cat">{post.category}</span>
       </Link>

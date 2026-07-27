@@ -6,7 +6,7 @@ import ShareButtons from '@/components/ShareButtons';
 import ShareCard from '@/components/ShareCard';
 import CommentSection from '@/components/CommentSection';
 import { getPost, listComments } from '@/lib/queries';
-import { coverFor } from '@/lib/categories';
+import { coverFor, coverInk } from '@/lib/categories';
 import { timeAgo } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
@@ -54,7 +54,7 @@ export default function PostPage({ params }) {
             阅读原文 · {post.source} →
           </a>
         ) : null}
-        <div className="article-cover" style={{ background: coverFor(post) }}>
+        <div className="article-cover" data-wm={(post.category || 'AI')[0]} style={{ background: coverFor(post), '--wm-ink': coverInk(post) }}>
           <CoverImage src={post.image_url} alt={post.title} className="cover-img" />
           <span className="cover-cat">{post.category}</span>
         </div>
