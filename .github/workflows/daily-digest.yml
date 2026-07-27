@@ -3,7 +3,7 @@ name: daily-digest
 # 每日 08:00（北京时间）向已确认订阅者发送「今日 AI 一页」邮件
 on:
   schedule:
-    - cron: '0 0 * * *'  # 00:00 UTC = 08:00 北京时间
+    - cron: '13 0 * * *'  # 00:13 UTC = 08:13 北京时间（避开整点高峰排队）
   workflow_dispatch:
 
 permissions:
