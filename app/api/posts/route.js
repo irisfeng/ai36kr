@@ -7,6 +7,7 @@ import { consumeRequestRateLimit } from '@/lib/rate-limit';
 import { rateLimitExceeded, writeJson } from '@/lib/write-response';
 import { PaginationError, parsePostPagination } from '@/lib/pagination';
 import { moderateContent } from '@/lib/moderate';
+import { normalizeExternalHttpUrl } from '@/lib/external-url';
 
 export const dynamic = 'force-dynamic';
 const POST_LIMIT = { scope: 'posts', limit: 5, windowMs: 10 * 60 * 1000 };
@@ -70,10 +71,13 @@ export async function POST(request) {
   const title = String(body.title || '').trim().slice(0, 120);
   const summary = String(body.summary || '').trim().slice(0, 500);
   const category = String(body.category || '大模型').slice(0, 20);
-  const url = String(body.url || '').trim().slice(0, 300);
+  const url = normalizeExternalHttpUrl(body.url, { maxLength: 300 });
 
   if (!title || !summary) {
     return writeJson({ error: '标题和摘要不能为空' }, { status: 400, rateLimit: requestLimit });
+  }
+  if (url === null) {
+    return writeJson({ error: '链接必须是有效的 http/https 地址' }, { status: 400, rateLimit: requestLimit });
   }
 
   // 内容审核：本地敏感词 → Ark LLM 快审

@@ -27,14 +27,15 @@ function fmt(date) {
 }
 
 export async function generateMetadata({ params }) {
+  const { date } = await params;
   return {
-    title: `${fmt(params.date)} AI 日报`,
-    description: `${fmt(params.date)} 的 AI 圈一页：当日热词、最受关注 Top3、按分类分组的收录。`,
+    title: `${fmt(date)} AI 日报`,
+    description: `${fmt(date)} 的 AI 圈一页：当日热词、最受关注 Top3、按分类分组的收录。`,
   };
 }
 
-export default function DailyArchivePage({ params }) {
-  const date = params.date;
+export default async function DailyArchivePage({ params }) {
+  const { date } = await params;
   if (!DATE_RE.test(date)) notFound();
 
   const [start, end] = dayRange(date);
