@@ -36,6 +36,12 @@ test('post queries apply stable SQL ordering before limit and offset', async () 
   } finally {
     db?.close?.();
     process.chdir(originalCwd);
-    fs.rmSync(tempDir, { recursive: true, force: true });
+    // Windows 上 libsql 原生句柄要到进程退出才释放，删临时目录必现 EBUSY；
+    // 清理失败不应判负测试断言（临时目录由 OS 回收），Linux CI 行为不变
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch (e) {
+      console.warn(`临时目录清理失败（忽略）: ${e?.code || e}`);
+    }
   }
 });

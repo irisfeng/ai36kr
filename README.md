@@ -50,7 +50,7 @@ npm run build && npm start
 - **新品榜 `/launch`**：今日 / 本周榜单，前三名金/银/铜徽章，可投票
 - **投稿 `/submit`**：提交标题 / 链接 / 摘要 / 分类，直接进列表
 - **搜索**：顶导航搜索框，标题 / 摘要 LIKE 查询
-- **日报邮件订阅**：页脚与 `/daily` 页表单订阅，确认邮件双选入（double opt-in），每日 08:00（北京时间）GitHub Actions 推送「今日 AI 一页」（热词 + Top3 + 分类收录），一键退订；发信走 Resend（`mail.shddai.net` 已验证域），密钥 `RESEND_API_KEY`
+- **日报邮件订阅**：页脚与 `/daily` 页表单订阅，确认邮件双选入（double opt-in），每日 08:13 起（北京时间）GitHub Actions 推送「今日 AI 一页」（热词 + Top3 + 分类收录），一键退订；发信走 Resend（`mail.shddai.net` 已验证域），密钥 `RESEND_API_KEY`。为对冲 GitHub 定时调度的延迟/丢弃，调度设北京 08:13 / 09:13 / 10:13 三个时点，首个实际运行的时点发送，`digest_log` 表按北京日历日幂等，备份时点自动跳过不重复打扰；48h 无内容或全部发送失败则以非零退出触发告警并留给下时点重试
 
 ## 信息源聚合
 
@@ -71,7 +71,7 @@ npm run build && npm start
 
 **新品源（1）**：Product Hunt（AI 分类 Atom feed），自动提取产品名与 tagline，附 Product Hunt 链接
 
-**持续更新机制（三层）**：① GitHub Actions 每 30 分钟聚合全部源并提交内容快照（`data/snapshot.json`），快照提交触发 Vercel 自动部署，新实例冷启动从快照水合；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 source_status 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。函数区域 `hkg1`（香港），兼顾中文源可达性与国内访问延迟。
+**持续更新机制（三层）**：① GitHub Actions 每 30 分钟聚合全部源并提交内容快照（`data/snapshot.json`），快照提交触发 Vercel 自动部署，新实例冷启动从快照水合；快照同时携带 `source_status`（含连续失败计数），CI 端源健康巡检跨轮累计、连续 3 轮失败自动开 GitHub Issue 告警（`REPO_ALERT_TOKEN`）；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 source_status 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。函数区域 `hkg1`（香港），兼顾中文源可达性与国内访问延迟。两个会写 main 的 workflow 共用 `main-writer` 并发组串行化，推送前 `pull --rebase` 重试，避免定时运行延迟释放时撞车；每轮聚合/日报结果写入 Actions Step Summary，无需下载日志即可巡检
 
 **内容质量机制**：泛科技源 AI 关键词闸门（见上）；跨源去重——两层：① 标题归一化唯一索引（`title_norm`，精确同题只留先到者）；② 模糊去重（`lib/dedupe.js`，中文 bigram + 英文去停用词的词集 Jaccard ≥ 0.5 判同事件，近 7 天词集每轮共享，阈值经真重复 0.53-0.67 / 误伤 ≤0.15 标定）；旧内容自动清理（文章留 30 天（深度长文 90 天）、快讯留 7 天，有评论的保留，孤儿投票/反应一并清理）；缩略图双重获取（RSS 内嵌图 + og:image 回填，logo/品牌图视为无图）。
 

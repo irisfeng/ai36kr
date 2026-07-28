@@ -4,17 +4,20 @@ import path from 'node:path';
 import fs from 'node:fs';
 import db from '../lib/db.js';
 
-const LIMITS = { posts: 600, flashes: 300, products: 100 };
+const LIMITS = { posts: 600, flashes: 300, products: 100, source_status: 100 };
 const COLS = {
   posts: 'id, title, title_norm, title_zh, summary_zh, ext_score, source, category, summary, content, is_deep, up, down, created_at, url, is_external, source_home, image_url',
   flashes: 'id, content, tag, up, created_at, url, source',
   products: 'id, name, tagline, description, category, up, created_at, url, image_url',
+  // 源健康状态随快照走：CI 每轮水合后 fail_streak 跨轮累计，连续失败告警才能生效
+  source_status: 'name, home, url, ok, last_fetch, item_count, error, fail_streak',
 };
 
 const snapshot = { exportedAt: new Date().toISOString(), version: 1 };
 for (const [table, cols] of Object.entries(COLS)) {
+  const order = table === 'source_status' ? 'name' : 'created_at DESC';
   snapshot[table] = db
-    .prepare(`SELECT ${cols} FROM ${table} ORDER BY created_at DESC LIMIT ${LIMITS[table]}`)
+    .prepare(`SELECT ${cols} FROM ${table} ORDER BY ${order} LIMIT ${LIMITS[table]}`)
     .all();
 }
 

@@ -11,6 +11,12 @@ on:
 permissions:
   contents: write
 
+# 与 daily-digest 共用同一并发组：两个 workflow 都会 push main，串行化避免
+# GitHub 延迟释放的定时运行成批撞车（non-fast-forward）
+concurrency:
+  group: main-writer
+  cancel-in-progress: false
+
 jobs:
   aggregate:
     runs-on: ubuntu-latest
@@ -43,5 +49,10 @@ jobs:
             echo "内容无变化，跳过提交"
           else
             git commit -m "chore(snapshot): 定时聚合 $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push
+            # 跨 workflow 并发组外的残余竞争兜底：rebase 后重试推送
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && exit 0
+              sleep 5
+            done
+            exit 1
           fi

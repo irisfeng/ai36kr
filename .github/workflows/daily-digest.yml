@@ -1,13 +1,21 @@
 name: daily-digest
 
 # 每日 08:00（北京时间）向已确认订阅者发送「今日 AI 一页」邮件
+# GitHub 定时调度在高负载时会延迟甚至丢弃运行，故设 3 个时点（北京 08:13 / 09:13 / 10:13）：
+# 首个实际运行的时点发送，send-daily.mjs 以 digest_log 幂等，其余时点自动跳过
 on:
   schedule:
-    - cron: '13 0 * * *'  # 00:13 UTC = 08:13 北京时间（避开整点高峰排队）
+    - cron: '13 0,1,2 * * *'  # 00:13/01:13/02:13 UTC = 北京 08:13/09:13/10:13
   workflow_dispatch:
 
 permissions:
   contents: write
+
+# 与 aggregate 共用同一并发组：两个 workflow 都会 push main，串行化避免
+# GitHub 延迟释放的定时运行成批撞车（non-fast-forward）
+concurrency:
+  group: main-writer
+  cancel-in-progress: false
 
 jobs:
   send:
@@ -45,5 +53,10 @@ jobs:
             echo "海报无变化"
           else
             git commit -m "chore(card): 今日头条海报 $(date -u +'%Y-%m-%d')"
-            git push
+            # 跨 workflow 并发组外的残余竞争兜底：rebase 后重试推送
+            for i in 1 2 3; do
+              git pull --rebase origin main && git push && exit 0
+              sleep 5
+            done
+            exit 1
           fi
