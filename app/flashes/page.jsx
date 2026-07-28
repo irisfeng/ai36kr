@@ -9,9 +9,11 @@ export const metadata = { title: '7×24 快讯 - 听潮' };
 
 const PAGE_SIZE = 100;
 
-export default function FlashesPage({ searchParams }) {
-  const before = typeof searchParams.before === 'string' && !Number.isNaN(Date.parse(searchParams.before))
-    ? searchParams.before
+export default async function FlashesPage({ searchParams }) {
+  // Next 15+：searchParams 是 Promise，必须 await
+  const sp = await searchParams;
+  const before = typeof sp.before === 'string' && !Number.isNaN(Date.parse(sp.before))
+    ? sp.before
     : '';
   const flashes = listFlashes({ before, limit: PAGE_SIZE });
   const oldest = flashes[flashes.length - 1];

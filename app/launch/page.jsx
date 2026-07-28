@@ -9,8 +9,10 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = { title: 'AI 新品榜 - 听潮' };
 
-export default function LaunchPage({ searchParams }) {
-  const period = searchParams.period === 'week' ? 'week' : 'today';
+export default async function LaunchPage({ searchParams }) {
+  // Next 15+：searchParams 是 Promise，必须 await
+  const sp = await searchParams;
+  const period = sp.period === 'week' ? 'week' : 'today';
   const products = listProducts(period);
 
   return (

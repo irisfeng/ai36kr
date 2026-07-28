@@ -14,11 +14,13 @@ const TABS = [
 ];
 const PAGE_SIZE = 50;
 
-export default function HomePage({ searchParams }) {
-  const sort = ['hot', 'new', 'deep'].includes(searchParams.sort) ? searchParams.sort : 'hot';
-  const cat = searchParams.cat || '';
-  const q = (searchParams.q || '').trim();
-  const requestedPage = Number(searchParams.page);
+export default async function HomePage({ searchParams }) {
+  // Next 15+：searchParams 是 Promise，必须 await，同步访问全部得到 undefined
+  const sp = await searchParams;
+  const sort = ['hot', 'new', 'deep'].includes(sp.sort) ? sp.sort : 'hot';
+  const cat = sp.cat || '';
+  const q = (sp.q || '').trim();
+  const requestedPage = Number(sp.page);
   const page = Number.isInteger(requestedPage) && requestedPage > 0 && requestedPage <= 200
     ? requestedPage
     : 1;
