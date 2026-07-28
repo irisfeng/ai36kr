@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import SubscribeEntry from './SubscribeEntry';
+import { beijingNow } from '@/lib/time';
 
 const LINKS = [
   { href: '/', label: '首页' },
@@ -25,9 +26,9 @@ export default function Nav() {
     else router.push('/');
   }
 
-  const today = new Date().toLocaleDateString('zh-CN', {
-    year: 'numeric', month: 'long', day: 'numeric', weekday: 'long',
-  });
+  // 刊头日期固定 UTC+8（与全站时间显示统一，不随浏览器/服务器时区漂移）
+  const bj = beijingNow();
+  const today = `${bj.getUTCFullYear()}年${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日 星期${'日一二三四五六'[bj.getUTCDay()]}`;
 
   return (
     <header className="nav">

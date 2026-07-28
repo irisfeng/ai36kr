@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import { dateGroup } from '@/lib/time';
 
 // 微信分享卡片：报纸风海报（图 + 文 + 角落二维码），html2canvas 转 PNG，长按保存发朋友圈
 export default function ShareCard({ post }) {
@@ -14,8 +15,7 @@ export default function ShareCard({ post }) {
 
   const postUrl = `https://aikr.shddai.net/post/${post.id}`;
   const title = post.title_zh || post.title;
-  const date = new Date(post.created_at);
-  const dateStr = `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+  const dateStr = dateGroup(post.created_at); // 海报日期统一 UTC+8
 
   useEffect(() => {
     if (!open) return;
