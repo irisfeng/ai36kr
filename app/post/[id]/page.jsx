@@ -57,7 +57,7 @@ export default async function PostPage({ params }) {
           </a>
         ) : null}
         <div className="article-cover" data-wm={(post.category || 'AI')[0]} style={{ background: coverFor(post), '--wm-ink': coverInk(post) }}>
-          <CoverImage src={post.image_url} alt={post.title} className="cover-img" />
+          <CoverImage src={post.image_url || `/api/cover/${post.id}.svg`} alt={post.title} className="cover-img" />
           <span className="cover-cat">{post.category}</span>
         </div>
         <div className="article-content">
