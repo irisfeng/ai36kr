@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import QRCode from 'qrcode';
 import db from '../lib/db.js';
 import { attachReactions } from '../lib/queries.js';
+import { coverFor, coverInk } from '../lib/categories.js';
 
 const SITE = 'https://aikr.shddai.net';
 
@@ -31,9 +32,10 @@ const esc = (s = '') => String(s)
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;');
+// 封面与站内一致的「纸面活字」：分类浅纸底 + 首字水印 + 斜纹肌理，有图时图片覆盖
 const cover = top.image_url
-  ? `<div class="cover"><img src="${SITE}/api/img?u=${encodeURIComponent(top.image_url)}" alt=""/><span class="cat">${esc(top.category)}</span></div>`
-  : `<div class="cover plain"><span class="cat">${esc(top.category)}</span></div>`;
+  ? `<div class="cover" style="background:${coverFor(top)}"><img src="${SITE}/api/img?u=${encodeURIComponent(top.image_url)}" alt=""/><span class="cat">${esc(top.category)}</span></div>`
+  : `<div class="cover" style="background:${coverFor(top)}"><span class="wm" style="color:${coverInk(top)}">${esc((top.category || 'AI')[0])}</span></div>`;
 
 const html = `<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="utf-8">
@@ -51,10 +53,11 @@ const html = `<!DOCTYPE html>
   .brand { font-family: 'Songti SC','Noto Serif SC',serif; font-weight: 900; font-size: 22px; letter-spacing: 2px; line-height: 1.15; }
   .wire { font-family: Menlo, monospace; font-size: 7.5px; letter-spacing: 2.5px; color: #8B8574; }
   .date { margin-left: auto; font-family: Menlo, monospace; font-size: 9.5px; color: #8B8574; }
-  .cover { position: relative; margin-top: 14px; aspect-ratio: 21/9; overflow: hidden; background: linear-gradient(150deg,#2B2615,#161307); }
-  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .cover.plain::before { content: 'AI'; position: absolute; right: 10px; top: 6px; font-family: 'Songti SC',serif; font-size: 52px; font-weight: 900; color: rgba(252,251,247,0.13); }
-  .cat { position: absolute; left: 10px; bottom: 10px; background: rgba(25,24,19,0.6); color: #FCFBF7; font-family: 'Songti SC',serif; font-weight: 900; font-size: 13px; padding: 2px 8px; }
+  .cover { position: relative; margin-top: 14px; aspect-ratio: 21/9; overflow: hidden; background: #EDEAE0; }
+  .cover img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(135deg, rgba(25,24,19,0.05) 0 1px, transparent 1px 7px); }
+  .wm { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-family: 'Songti SC',serif; font-size: 64px; font-weight: 900; line-height: 1; opacity: 0.14; }
+  .cat { position: absolute; left: 10px; bottom: 10px; z-index: 2; background: rgba(25,24,19,0.6); color: #FCFBF7; font-family: 'Songti SC',serif; font-weight: 900; font-size: 13px; padding: 2px 8px; }
   .body { padding: 14px 2px 12px; }
   h1 { font-family: 'Songti SC','Noto Serif SC',serif; font-weight: 900; font-size: 21px; line-height: 1.45; }
   .orig { font-size: 11px; color: #8B8574; margin-top: 5px; line-height: 1.5; }

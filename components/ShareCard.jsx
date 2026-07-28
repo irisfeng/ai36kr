@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { dateGroup } from '@/lib/time';
+import { coverFor, coverInk } from '@/lib/categories';
 
 // 微信分享卡片：报纸风海报（图 + 文 + 角落二维码），html2canvas 转 PNG，长按保存发朋友圈
 export default function ShareCard({ post }) {
@@ -94,12 +95,14 @@ export default function ShareCard({ post }) {
                     <span className="sc-date">{dateStr}</span>
                   </div>
                   {post.image_url ? (
-                    <div className="sc-cover">
+                    <div className="sc-cover" style={{ background: coverFor(post) }}>
                       <img ref={imgRef} src={`/api/img?u=${encodeURIComponent(post.image_url)}`} alt="" />
                       <span className="sc-cat">{post.category}</span>
                     </div>
                   ) : (
-                    <div className="sc-cover sc-cover-plain"><span className="sc-cat">{post.category}</span></div>
+                    <div className="sc-cover" style={{ background: coverFor(post) }}>
+                      <span className="sc-wm" style={{ color: coverInk(post) }}>{(post.category || 'AI')[0]}</span>
+                    </div>
                   )}
                   <div className="sc-body">
                     <h1 className="sc-title">{title}</h1>
