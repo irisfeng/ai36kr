@@ -4,6 +4,8 @@
 
 ## 启动
 
+需要 Node.js 20.9 或更高版本。
+
 ```bash
 npm install
 npm run dev        # 开发模式，访问 http://localhost:3000
@@ -15,7 +17,7 @@ npm run build && npm start
 
 ## 技术栈
 
-- Next.js 14（App Router）+ React 18 + 原生 CSS（CSS 变量 + 手写样式，无 Tailwind）
+- Next.js 16（App Router）+ React 19 + 原生 CSS（CSS 变量 + 手写样式，无 Tailwind）
 - 数据库：`libsql` 双模连接；本地使用 `data/tidewire.db`，生产可通过 Turso 使用远端持久化数据库
 - 无登录系统：昵称存 localStorage（首次评论弹窗输入）；投票用 localStorage 匿名 token 去重（可取消/改票）
 - 文章封面：CSS 墨色系双色调渐变 + 白色衬线分类字，分类间仅色相微差，无外部图片依赖
@@ -77,7 +79,7 @@ npm run build && npm start
 
 **入库规则**：按 `url` 部分唯一索引去重（`INSERT OR IGNORE`）；`pubDate` 转 ISO 存 `created_at`；摘要剥 HTML 截 300 字；`lib/classify.js` 按关键词把条目归一到现有分类；聚合条目 `is_external=1`，站内投稿为 0。
 
-**缩略图**：入库时优先提取 RSS 内嵌图（enclosure / media:* / 正文首张 `<img>`）；无图条目由 `lib/ogimage.js` 抓原文页 `og:image` 回填（每轮限量、4 路并发、8s 超时、失败标记不再重试；站点 logo / 图标类图片视为无图）。前端 `components/CoverImage.jsx` 加载失败自动降级回分类渐变封面，`referrerPolicy="no-referrer"` 规避大部分防盗链。存量库可手动批量回填：`node --experimental-sqlite scripts/backfill-images.mjs [数量]`
+**缩略图**：入库时优先提取 RSS 内嵌图（enclosure / media:* / 正文首张 `<img>`）；无图条目由 `lib/ogimage.js` 抓原文页 `og:image` 回填（每轮限量、4 路并发、8s 超时、失败标记不再重试；站点 logo / 图标类图片视为无图）。回填请求仅允许公网 HTTP(S) 地址，DNS 解析后固定目标 IP，不跟随重定向，并限制响应类型与大小，避免 SSRF。前端 `components/CoverImage.jsx` 加载失败自动降级回分类渐变封面，`referrerPolicy="no-referrer"` 规避大部分防盗链。存量库可手动批量回填：`node scripts/backfill-images.mjs [数量]`
 
 ## API
 

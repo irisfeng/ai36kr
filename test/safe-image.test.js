@@ -7,6 +7,7 @@ import {
   readImageResponse,
   resolvePublicImageTarget,
 } from '../lib/safe-image.js';
+import { fetchOgImage } from '../lib/ogimage.js';
 
 test('image proxy rejects local, private, link-local, and reserved addresses', () => {
   for (const address of [
@@ -85,4 +86,10 @@ test('image proxy aborts while streaming when the byte cap is exceeded', async (
   );
   assert.equal(requestDestroyed, true);
   assert.equal(response.destroyed, true);
+});
+
+test('og image lookup rejects private and local destinations before fetching', async () => {
+  assert.equal(await fetchOgImage('http://127.0.0.1/private'), null);
+  assert.equal(await fetchOgImage('http://169.254.169.254/latest/meta-data'), null);
+  assert.equal(await fetchOgImage('http://localhost/admin'), null);
 });

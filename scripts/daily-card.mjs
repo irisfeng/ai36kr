@@ -25,10 +25,15 @@ const postUrl = `${SITE}/post/${top.id}`;
 const date = new Date(Date.now() + 8 * 3600000);
 const dateStr = `${date.getUTCFullYear()} 年 ${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
 const qr = await QRCode.toDataURL(postUrl, { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });
+const esc = (s = '') => String(s)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 const cover = top.image_url
-  ? `<div class="cover"><img src="${SITE}/api/img?u=${encodeURIComponent(top.image_url)}" alt=""/><span class="cat">${top.category}</span></div>`
-  : `<div class="cover plain"><span class="cat">${top.category}</span></div>`;
-const esc = (s = '') => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  ? `<div class="cover"><img src="${SITE}/api/img?u=${encodeURIComponent(top.image_url)}" alt=""/><span class="cat">${esc(top.category)}</span></div>`
+  : `<div class="cover plain"><span class="cat">${esc(top.category)}</span></div>`;
 
 const html = `<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="utf-8">

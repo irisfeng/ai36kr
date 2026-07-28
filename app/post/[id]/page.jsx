@@ -12,7 +12,8 @@ import { timeAgo } from '@/lib/time';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }) {
-  const post = getPost(Number(params.id));
+  const { id } = await params;
+  const post = getPost(Number(id));
   if (!post) return { title: '文章不存在' };
   const description = (post.summary || post.title).slice(0, 120);
   const images = post.image_url ? [post.image_url] : ['/og-cover.png'];
@@ -31,8 +32,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default function PostPage({ params }) {
-  const post = getPost(Number(params.id));
+export default async function PostPage({ params }) {
+  const { id } = await params;
+  const post = getPost(Number(id));
   if (!post) notFound();
 
   return (
