@@ -56,10 +56,12 @@ export default async function PostPage({ params }) {
             阅读原文 · {post.source} →
           </a>
         ) : null}
-        <div className="article-cover" data-wm={(post.category || 'AI')[0]} style={{ background: coverFor(post), '--wm-ink': coverInk(post) }}>
-          <CoverImage src={post.image_url || `/api/cover/${post.id}.svg`} alt={post.title} className="cover-img" />
-          <span className="cover-cat">{post.category}</span>
-        </div>
+        {post.image_url || post.is_deep ? (
+          <div className="article-cover" data-wm={(post.category || 'AI')[0]} style={{ background: coverFor(post), '--wm-ink': coverInk(post) }}>
+            <CoverImage src={post.image_url || `/api/cover/${post.id}.svg`} alt={post.title} className="cover-img" />
+            <span className="cover-cat">{post.category}</span>
+          </div>
+        ) : null}
         <div className="article-content">
           {post.paragraphs.map((p, i) => <p key={i}>{p}</p>)}
         </div>

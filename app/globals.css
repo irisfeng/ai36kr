@@ -124,6 +124,12 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
   padding: 20px 2px; border-top: 1px solid var(--line);
 }
 .main-col > .post-card:first-of-type { border-top: none; }
+/* 无图纯文字卡：单列 + 左侧分类色细条版记（装饰让位给文字） */
+.post-card.no-cover { grid-template-columns: minmax(0, 1fr); gap: 0; position: relative; padding-left: 16px; }
+.post-card.no-cover::before {
+  content: ''; position: absolute; left: 0; top: 22px; bottom: 22px; width: 3px;
+  background: var(--cat-ink, var(--line)); opacity: 0.5;
+}
 .post-cover {
   min-height: 98px; position: relative; overflow: hidden;
   display: flex; align-items: flex-end; padding: 9px 10px;

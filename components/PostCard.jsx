@@ -6,17 +6,21 @@ import { timeAgo } from '@/lib/time';
 import { coverFor, coverInk } from '@/lib/categories';
 
 export default function PostCard({ post }) {
+  const hasImage = !!post.image_url;
+  const showTide = !hasImage && !!post.is_deep; // 深度长读才配潮汐插画
   return (
-    <article className="post-card">
-      <Link
-        href={`/post/${post.id}`}
-        className="post-cover"
-        data-wm={(post.category || 'AI')[0]}
-        style={{ background: coverFor(post), '--wm-ink': coverInk(post) }}
-      >
-        <CoverImage src={post.image_url || `/api/cover/${post.id}.svg`} alt={post.title} className="cover-img" />
-        <span className="cover-cat">{post.category}</span>
-      </Link>
+    <article className={`post-card${hasImage ? '' : ' no-cover'}`} style={hasImage || showTide ? {} : { '--cat-ink': coverInk(post) }}>
+      {hasImage || showTide ? (
+        <Link
+          href={`/post/${post.id}`}
+          className="post-cover"
+          data-wm={(post.category || 'AI')[0]}
+          style={{ background: coverFor(post), '--wm-ink': coverInk(post) }}
+        >
+          <CoverImage src={post.image_url || `/api/cover/${post.id}.svg`} alt={post.title} className="cover-img" />
+          <span className="cover-cat">{post.category}</span>
+        </Link>
+      ) : null}
       <div className="post-body">
         <div className="post-meta">
           <span className="post-source">{post.source}</span>
