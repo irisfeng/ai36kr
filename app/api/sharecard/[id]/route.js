@@ -95,9 +95,9 @@ export async function GET(request, ctx) {
   <text x="${PAD + 10}" y="${y + coverH - 11}" font-family="'Songti SC','Noto Serif SC',serif" font-weight="900" font-size="19" fill="#FCFBF7">${esc(post.category)}</text>`);
   y += coverH + 30;
 
-  // 标题/原文/摘要
+  // 标题/原文/摘要（textLength 强制适配行宽，杜绝跨平台字宽差异溢出）
   for (const l of titleLines) {
-    parts.push(`<text x="${PAD}" y="${y + 18}" font-family="'Songti SC','Noto Serif SC',serif" font-weight="900" font-size="44" fill="#191813">${esc(l)}</text>`);
+    parts.push(`<text x="${PAD}" y="${y + 18}" textLength="${textW}" lengthAdjust="spacingAndGlyphs" font-family="'Songti SC','Noto Serif SC',serif" font-weight="900" font-size="44" fill="#191813">${esc(l)}</text>`);
     y += 60;
   }
   y += 4;
@@ -107,7 +107,7 @@ export async function GET(request, ctx) {
   }
   y += 8;
   for (const l of summaryLines) {
-    parts.push(`<text x="${PAD}" y="${y + 10}" font-family="-apple-system,'PingFang SC',sans-serif" font-size="24" fill="#4B463A">${esc(l)}</text>`);
+    parts.push(`<text x="${PAD}" y="${y + 10}" textLength="${textW}" lengthAdjust="spacingAndGlyphs" font-family="-apple-system,'PingFang SC',sans-serif" font-size="24" fill="#4B463A">${esc(l)}</text>`);
     y += 40;
   }
   parts.push(`<text x="${PAD}" y="${y + 16}" font-family="Menlo,monospace" font-size="16" fill="#8B8574">${esc(post.source)} · ${esc(post.category)}</text>`);
