@@ -39,6 +39,10 @@ jobs:
           ARK_API_KEY: ${{ secrets.ARK_API_KEY }}
           # 源健康告警：连续失败自动开 Issue（缺失时静默跳过）
           REPO_ALERT_TOKEN: ${{ secrets.REPO_ALERT_TOKEN }}
+          # 聚合直写远端 Turso 库：日报邮件/今日头条海报与站点共享同一数据源
+          # （站点实例的 /tmp 临时库不持久，日报不能依赖它；缺失时退化为本地库仅出快照）
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
       - name: 提交快照
         run: |

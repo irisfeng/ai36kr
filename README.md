@@ -71,7 +71,7 @@ npm run build && npm start
 
 **新品源（1）**：Product Hunt（AI 分类 Atom feed），自动提取产品名与 tagline，附 Product Hunt 链接
 
-**持续更新机制（三层）**：① GitHub Actions 每 30 分钟聚合全部源并提交内容快照（`data/snapshot.json`），快照提交触发 Vercel 自动部署，新实例冷启动从快照水合；快照同时携带 `source_status`（含连续失败计数），CI 端源健康巡检跨轮累计、连续 3 轮失败自动开 GitHub Issue 告警（`REPO_ALERT_TOKEN`）；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 source_status 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。函数区域 `hkg1`（香港），兼顾中文源可达性与国内访问延迟。两个会写 main 的 workflow 共用 `main-writer` 并发组串行化，推送前 `pull --rebase` 重试，避免定时运行延迟释放时撞车；每轮聚合/日报结果写入 Actions Step Summary，无需下载日志即可巡检
+**持续更新机制（三层）**：① GitHub Actions 每 30 分钟聚合全部源——**直写 Turso 远端库**（日报邮件/今日头条海报与站点共享同一数据源；站点的 /tmp 实例库不持久，日报不依赖它），并提交内容快照（`data/snapshot.json`），快照提交触发 Vercel 自动部署，新实例冷启动从快照水合；快照同时携带 `source_status`（含连续失败计数），CI 端源健康巡检跨轮累计、连续 3 轮失败自动开 GitHub Issue 告警（`REPO_ALERT_TOKEN`）；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 source_status 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。函数区域 `hkg1`（香港），兼顾中文源可达性与国内访问延迟。两个会写 main 的 workflow 共用 `main-writer` 并发组串行化，推送前 `pull --rebase` 重试，避免定时运行延迟释放时撞车；每轮聚合/日报结果写入 Actions Step Summary，无需下载日志即可巡检
 
 **内容质量机制**：泛科技源 AI 关键词闸门（见上）；跨源去重——两层：① 标题归一化唯一索引（`title_norm`，精确同题只留先到者）；② 模糊去重（`lib/dedupe.js`，中文 bigram + 英文去停用词的词集 Jaccard ≥ 0.5 判同事件，近 7 天词集每轮共享，阈值经真重复 0.53-0.67 / 误伤 ≤0.15 标定）；旧内容自动清理（文章留 30 天（深度长文 90 天）、快讯留 7 天，有评论的保留，孤儿投票/反应一并清理）；缩略图双重获取（RSS 内嵌图 + og:image 回填，logo/品牌图视为无图）。
 
@@ -138,7 +138,7 @@ data/tidewire.db      # 本地 SQLite 数据库（首次访问自动生成）
 | `NEXT_PUBLIC_SITE_URL` | 生产推荐 | 站点规范 origin，例如 `https://your-domain.example`；用于 serverless 实例触发受保护的刷新函数 |
 | `ARK_API_KEY` | 可选 | 火山方舟标题翻译；缺失时回退到公开翻译端点 |
 
-部署后还需在 GitHub Actions secrets 中按需配置 `ARK_API_KEY`，供定时快照聚合使用。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
+部署后还需在 GitHub Actions secrets 中配置：`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`（aggregate 直写远端库、daily-digest 读取同源数据，必需）、`RESEND_API_KEY`（日报发信，必需）、`ARK_API_KEY`（标题/摘要翻译，可选）、`REPO_ALERT_TOKEN`（源失败自动开 Issue，可选）。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
 
 ### 写接口限流边界
 
