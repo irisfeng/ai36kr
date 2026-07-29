@@ -54,7 +54,9 @@ async function coverBlock(post, x, y, w, h) {
 
 export async function GET(request, { params }) {
   const id = Number(String(params.id).replace(/\.svg$/i, ''));
-  if (!Number.isInteger(id) || id <= 0) return new Response('bad id', { status: 400 });
+  if (!Number.isInteger(id) || id <= 0) {
+    return new Response(`bad id: raw=${String(params.id)}`, { status: 400 });
+  }
   const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(id);
   if (!post) return new Response('not found', { status: 404 });
 
