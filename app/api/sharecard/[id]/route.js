@@ -71,8 +71,14 @@ export async function GET(request, ctx) {
   // 折行预留 6% 安全边（不同平台字体宽度有差异），文字区加裁剪防溢出
   const textW = (W - PAD * 2) * 0.94;
   const titleLines = wrap(title, 44, textW).slice(0, 3);
-  const origLines = post.title_zh ? wrap(post.title, 20, textW).slice(0, 1) : [];
-  const summaryLines = wrap(summary, 24, textW).slice(0, 4);
+  // 英文原题：超长按词边界截断，单行展示（避免折行估算截断单词）
+  const origText = post.title_zh
+    ? (post.title.length > 72 ? post.title.slice(0, 70).replace(/[\s,;:.-]+[^\s,;:.-]*$/, '') + '…' : post.title)
+    : '';
+  // 摘要折行去掉行首标点（，。、；：等不该出现在行首）
+  const summaryLines = wrap(summary, 24, textW)
+    .map((l) => l.replace(/^[，。、；：！？）】」』\s]+/, ''))
+    .slice(0, 4);
 
   let y = 0;
   const parts = [];
@@ -101,8 +107,8 @@ export async function GET(request, ctx) {
     y += 60;
   }
   y += 4;
-  for (const l of origLines) {
-    parts.push(`<text x="${PAD}" y="${y + 8}" font-family="-apple-system,'PingFang SC',sans-serif" font-size="20" fill="#8B8574">${esc(l)}</text>`);
+  if (origText) {
+    parts.push(`<text x="${PAD}" y="${y + 8}" font-family="-apple-system,'PingFang SC',sans-serif" font-size="20" fill="#8B8574">${esc(origText)}</text>`);
     y += 30;
   }
   y += 8;
