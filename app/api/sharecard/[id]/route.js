@@ -52,7 +52,8 @@ async function coverBlock(post, x, y, w, h) {
   </g>`;
 }
 
-export async function GET(request, { params }) {
+export async function GET(request, ctx) {
+  const params = await ctx.params; // 兼容 sync/async params（Vercel 构建器差异）
   const id = Number(String(params.id).replace(/\.svg$/i, ''));
   if (!Number.isInteger(id) || id <= 0) {
     return new Response(`bad id: raw=${String(params.id)}`, { status: 400 });
