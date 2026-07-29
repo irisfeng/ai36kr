@@ -15,18 +15,28 @@ function esc(s = '') {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// 中文按字宽折行（粗算：中文 1em，ASCII 0.55em）
+// 折行：CJK 按字、ASCII 按词（不在单词中间断行）；粗算字宽中文 1em、ASCII 0.56em
 function wrap(text, fontSize, maxWidth) {
-  const lines = [];
-  let line = '';
-  const width = (ch) => (/[⺀-鿿　-〿＀-￯]/.test(ch) ? fontSize : fontSize * 0.55);
-  for (const ch of String(text || '')) {
-    if (ch === '\n') { lines.push(line); line = ''; continue; }
-    const w = [...line].reduce((a, c) => a + width(c), 0) + width(ch);
-    if (w > maxWidth && line) { lines.push(line); line = ch; }
-    else line += ch;
+  const tokens = [];
+  for (const m of String(text || '').matchAll(/[A-Za-z0-9$@#%&+._~/-]+|\s+|[^A-Za-z0-9\s]/g)) {
+    const t = m[0];
+    if (/^\s+$/.test(t)) tokens.push({ t: ' ', w: fontSize * 0.3 });
+    else if (/^[A-Za-z0-9]/.test(t)) tokens.push({ t, w: t.length * fontSize * 0.56 });
+    else tokens.push({ t, w: fontSize });
   }
-  if (line) lines.push(line);
+  const lines = [];
+  let line = '', w = 0;
+  for (const tk of tokens) {
+    if (w + tk.w > maxWidth && line.trim()) {
+      lines.push(line.trimEnd());
+      line = tk.t === ' ' ? '' : tk.t;
+      w = line ? tk.w : 0;
+    } else {
+      line += tk.t;
+      w += tk.w;
+    }
+  }
+  if (line.trim()) lines.push(line.trimEnd());
   return lines;
 }
 
@@ -69,7 +79,7 @@ export async function GET(request, ctx) {
 
   const coverW = W - PAD * 2, coverH = Math.round(coverW * 9 / 21);
   // 折行预留 6% 安全边（不同平台字体宽度有差异），文字区加裁剪防溢出
-  const textW = (W - PAD * 2) * 0.94;
+  const textW = (W - PAD * 2) * 0.9;
   const titleLines = wrap(title, 44, textW).slice(0, 3);
   // 英文原题：超长按词边界截断，单行展示（避免折行估算截断单词）
   const origText = post.title_zh
@@ -103,7 +113,7 @@ export async function GET(request, ctx) {
 
   // 标题/原文/摘要（textLength 强制适配行宽，杜绝跨平台字宽差异溢出）
   for (const l of titleLines) {
-    parts.push(`<text x="${PAD}" y="${y + 18}" textLength="${textW}" lengthAdjust="spacingAndGlyphs" font-family="'Songti SC','Noto Serif SC',serif" font-weight="900" font-size="44" fill="#191813">${esc(l)}</text>`);
+    parts.push(`<text x="${PAD}" y="${y + 18}" font-family="'Songti SC','Noto Serif SC',serif" font-weight="900" font-size="44" fill="#191813">${esc(l)}</text>`);
     y += 60;
   }
   y += 4;
@@ -113,7 +123,7 @@ export async function GET(request, ctx) {
   }
   y += 8;
   for (const l of summaryLines) {
-    parts.push(`<text x="${PAD}" y="${y + 10}" textLength="${textW}" lengthAdjust="spacingAndGlyphs" font-family="-apple-system,'PingFang SC',sans-serif" font-size="24" fill="#4B463A">${esc(l)}</text>`);
+    parts.push(`<text x="${PAD}" y="${y + 10}" font-family="-apple-system,'PingFang SC',sans-serif" font-size="24" fill="#4B463A">${esc(l)}</text>`);
     y += 40;
   }
   parts.push(`<text x="${PAD}" y="${y + 16}" font-family="Menlo,monospace" font-size="16" fill="#8B8574">${esc(post.source)} · ${esc(post.category)}</text>`);
