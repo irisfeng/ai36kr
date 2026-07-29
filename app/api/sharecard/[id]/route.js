@@ -68,9 +68,11 @@ export async function GET(request, ctx) {
   const qr = await QRCode.toDataURL(`${SITE}/post/${post.id}`, { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });
 
   const coverW = W - PAD * 2, coverH = Math.round(coverW * 9 / 21);
-  const titleLines = wrap(title, 44, W - PAD * 2).slice(0, 3);
-  const origLines = post.title_zh ? wrap(post.title, 20, W - PAD * 2).slice(0, 1) : [];
-  const summaryLines = wrap(summary, 24, W - PAD * 2).slice(0, 4);
+  // 折行预留 6% 安全边（不同平台字体宽度有差异），文字区加裁剪防溢出
+  const textW = (W - PAD * 2) * 0.94;
+  const titleLines = wrap(title, 44, textW).slice(0, 3);
+  const origLines = post.title_zh ? wrap(post.title, 20, textW).slice(0, 1) : [];
+  const summaryLines = wrap(summary, 24, textW).slice(0, 4);
 
   let y = 0;
   const parts = [];
