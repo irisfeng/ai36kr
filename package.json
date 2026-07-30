@@ -10,7 +10,6 @@
     "test": "node --test --test-concurrency=1 test/*.test.js"
   },
   "dependencies": {
-    "html2canvas": "^1.4.1",
     "libsql": "^0.5.29",
     "next": "16.2.12",
     "qrcode": "^1.5.4",

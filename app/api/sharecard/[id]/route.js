@@ -4,6 +4,7 @@ import QRCode from 'qrcode';
 import db from '@/lib/db';
 import { tideCoverSvg } from '@/lib/tide-cover';
 import { fetchPublicImage } from '@/lib/safe-image';
+import { dateGroup } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,8 +74,7 @@ export async function GET(request, ctx) {
 
   const title = post.title_zh || post.title;
   const summary = post.summary_zh || post.summary || '';
-  const date = new Date(post.created_at);
-  const dateStr = `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+  const dateStr = dateGroup(post.created_at); // 海报日期统一 UTC+8
   const qr = await QRCode.toDataURL(`${SITE}/post/${post.id}`, { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });
 
   const coverW = W - PAD * 2, coverH = Math.round(coverW * 9 / 21);
@@ -111,7 +111,7 @@ export async function GET(request, ctx) {
   <text x="${PAD + 10}" y="${y + coverH - 11}" font-family="'Songti SC','Noto Serif SC',serif" font-weight="900" font-size="19" fill="#FCFBF7">${esc(post.category)}</text>`);
   y += coverH + 30;
 
-  // 标题/原文/摘要（textLength 强制适配行宽，杜绝跨平台字宽差异溢出）
+  // 标题/原文/摘要（折行已预留 6% 安全边，兼容跨平台字宽差异）
   for (const l of titleLines) {
     parts.push(`<text x="${PAD}" y="${y + 18}" font-family="'Songti SC','Noto Serif SC',serif" font-weight="900" font-size="44" fill="#191813">${esc(l)}</text>`);
     y += 60;
