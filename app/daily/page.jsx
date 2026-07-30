@@ -3,7 +3,7 @@ import { listPosts } from '@/lib/queries';
 import { hotWords } from '@/lib/keywords';
 import { dateGroup } from '@/lib/time';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = {
   title: '今日一页',

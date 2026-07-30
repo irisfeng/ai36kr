@@ -3,7 +3,7 @@ import VoteButtons from '@/components/VoteButtons';
 import { listFlashes } from '@/lib/queries';
 import { dateGroup, timeHM } from '@/lib/time';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = { title: '7×24 快讯 - 听潮' };
 

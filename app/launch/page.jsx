@@ -5,7 +5,7 @@ import { listProducts } from '@/lib/queries';
 import { productGradient } from '@/lib/categories';
 import { timeAgo } from '@/lib/time';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export const metadata = { title: 'AI 新品榜 - 听潮' };
 

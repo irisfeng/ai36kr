@@ -9,7 +9,7 @@ import { getPost, listComments } from '@/lib/queries';
 import { coverFor, coverInk } from '@/lib/categories';
 import { timeAgo } from '@/lib/time';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
