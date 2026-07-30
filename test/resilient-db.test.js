@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   createResilientDatabase,
   isHranaStreamNotFound,
+  isMutationSql,
 } from '../lib/resilient-db.js';
 
 const STREAM_ERROR = new Error(
@@ -27,6 +28,12 @@ test('recognizes only the observed Hrana stream expiry error', () => {
   assert.equal(isHranaStreamNotFound(STREAM_ERROR), true);
   assert.equal(isHranaStreamNotFound(new Error('SQLITE_BUSY')), false);
   assert.equal(isHranaStreamNotFound(new Error('stream not found')), false);
+});
+
+test('recognizes mutations even when they return rows', () => {
+  assert.equal(isMutationSql('UPDATE posts SET score = 1 RETURNING id'), true);
+  assert.equal(isMutationSql('WITH chosen AS (SELECT 1) DELETE FROM posts RETURNING id'), true);
+  assert.equal(isMutationSql('SELECT * FROM posts'), false);
 });
 
 test('reconnects and retries a failed read once', () => {
@@ -68,6 +75,68 @@ test('does not retry a write when its response is lost', () => {
 
   assert.throws(() => db.prepare('INSERT INTO events VALUES (?)').run('x'), STREAM_ERROR);
   assert.equal(connects, 1);
+});
+
+test('does not retry a mutation invoked through a reader method', () => {
+  let connects = 0;
+  const db = createResilientDatabase(() => {
+    connects++;
+    return fakeConnection({
+      statement: {
+        reader: true,
+        get() { throw STREAM_ERROR; },
+      },
+    });
+  });
+
+  assert.throws(
+    () => db.prepare('UPDATE events SET seen = 1 RETURNING id').get(),
+    STREAM_ERROR,
+  );
+  assert.equal(connects, 1);
+});
+
+test('restores statement options and bindings before retrying a read', () => {
+  const restored = [];
+  const connections = [
+    fakeConnection({
+      statement: {
+        reader: true,
+        pluck() {},
+        raw() {},
+        bind() {},
+        get() { throw STREAM_ERROR; },
+      },
+    }),
+    fakeConnection({
+      statement: {
+        reader: true,
+        pluck(enabled) { restored.push(['pluck', enabled]); },
+        raw(enabled) { restored.push(['raw', enabled]); },
+        bind(...params) { restored.push(['bind', ...params]); },
+        get() {
+          restored.push(['get']);
+          return 42;
+        },
+      },
+    }),
+  ];
+  const db = createResilientDatabase(() => connections.shift());
+
+  const result = db
+    .prepare('SELECT value FROM events WHERE id = ?')
+    .pluck()
+    .raw()
+    .bind(7)
+    .get();
+
+  assert.equal(result, 42);
+  assert.deepEqual(restored, [
+    ['pluck', true],
+    ['raw', true],
+    ['bind', 7],
+    ['get'],
+  ]);
 });
 
 test('does not reconnect for unrelated read failures', () => {
