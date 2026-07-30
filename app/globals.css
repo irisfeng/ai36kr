@@ -807,3 +807,6 @@ a.product-link:hover { color: var(--red); }
   .comment-form .btn-primary { min-height: 42px; padding: 0 18px; }
   .form-hint { display: none; }
 }
+
+/* 加载失败的封面整体退场（配合 CoverImage 错误降级） */
+.post-card.no-cover .post-cover, .article.no-cover .article-cover { display: none; }
