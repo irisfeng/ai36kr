@@ -4,3 +4,4 @@ data/*
 !data/snapshot.json
 .DS_Store
 .vercel
+promo/
