@@ -6,7 +6,7 @@ import { useState } from 'react';
 // 不再用 html2canvas 客户端截图（移动端会卡死在「正在生成图片…」）
 export default function ShareCard({ post }) {
   const [open, setOpen] = useState(false);
-  const posterUrl = `/api/sharecard/${post.id}.svg`;
+  const posterUrl = `/api/sharecard/${post.id}.svg?v=2`; // v=N 破边缘/浏览器缓存
 
   function close() { setOpen(false); }
 
