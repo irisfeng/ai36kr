@@ -8,6 +8,7 @@ import { rateLimitExceeded, writeJson } from '@/lib/write-response';
 import { PaginationError, parsePostPagination } from '@/lib/pagination';
 import { moderateContent } from '@/lib/moderate';
 import { normalizeExternalHttpUrl } from '@/lib/external-url';
+import { bustCache } from '@/lib/cache';
 
 export const dynamic = 'force-dynamic';
 const POST_LIMIT = { scope: 'posts', limit: 5, windowMs: 10 * 60 * 1000 };
@@ -96,6 +97,7 @@ export async function POST(request) {
       `INSERT INTO posts (title, title_norm, source, category, summary, content, is_deep, up, down, created_at, url)
        VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?)`
     ).run(title, normalizeTitle(title), source, category, summary, summary, new Date().toISOString(), url || null);
+    bustCache('lp:'); // 投稿即时可见：清掉本实例的列表缓存（跨实例由 30s TTL 收敛）
     return writeJson({ id: Number(r.lastInsertRowid) }, { status: 201, rateLimit: requestLimit });
   } catch (e) {
     if (String(e?.message || '').includes('UNIQUE')) {
