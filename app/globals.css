@@ -810,3 +810,18 @@ a.product-link:hover { color: var(--red); }
 
 /* 加载失败的封面整体退场（配合 CoverImage 错误降级） */
 .post-card.no-cover .post-cover, .article.no-cover .article-cover { display: none; }
+
+/* ---------- 热词落地页 ---------- */
+.word-crumb { font-size: 13px; color: var(--ink-3); margin-bottom: 6px; }
+.word-crumb a { border-bottom: 1px solid var(--line); }
+.word-title { display: flex; align-items: baseline; gap: 14px; }
+.word-trend { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+.word-trend.up { color: var(--red); }
+.word-trend.down { color: var(--ink-3); }
+.word-trend.flat { color: var(--ink-3); }
+.word-chart { display: flex; align-items: flex-end; gap: 6px; height: 110px; margin: 18px 0 30px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.wc-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; height: 100%; }
+.wc-n { font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+.wc-bar { width: 100%; background: var(--ink); opacity: 0.82; }
+.wc-col:last-child .wc-bar { background: var(--red); opacity: 1; }
+.wc-d { font-family: var(--mono); font-size: 9px; color: var(--ink-3); white-space: nowrap; }

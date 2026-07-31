@@ -37,7 +37,7 @@ export default function DailyView({
       {words.length > 0 && (
         <div className="daily-words">
           {words.map((w) => (
-            <Link key={w.word} href={`/?q=${encodeURIComponent(w.word)}`} className="daily-word">
+            <Link key={w.word} href={`/word/${encodeURIComponent(w.word)}`} className="daily-word">
               {w.word}<i>{w.count}</i>
             </Link>
           ))}

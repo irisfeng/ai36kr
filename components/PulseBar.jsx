@@ -15,7 +15,7 @@ export default function PulseBar() {
         <div className="pulse-words">
           {pulse.hotWords.length === 0 && <span className="pulse-empty">热词统计中…</span>}
           {pulse.hotWords.map((w) => (
-            <Link key={w.word} href={`/?q=${encodeURIComponent(w.word)}`} className="pulse-word">
+            <Link key={w.word} href={`/word/${encodeURIComponent(w.word)}`} className="pulse-word">
               {w.word}<i>{w.count}</i>
             </Link>
           ))}
