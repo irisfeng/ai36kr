@@ -138,7 +138,7 @@ data/tidewire.db      # 本地 SQLite 数据库（首次访问自动生成）
 | `NEXT_PUBLIC_SITE_URL` | 生产推荐 | 站点规范 origin，例如 `https://your-domain.example`；用于 serverless 实例触发受保护的刷新函数 |
 | `ARK_API_KEY` | 可选 | 火山方舟标题翻译；缺失时回退到公开翻译端点 |
 
-部署后还需在 GitHub Actions secrets 中配置：`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`（aggregate 直写远端库、daily-digest 读取同源数据，必需）、`RESEND_API_KEY`（日报发信，必需）、`ARK_API_KEY`（标题/摘要翻译，可选）、`REPO_ALERT_TOKEN`（源失败自动开 Issue，可选）。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
+部署后还需在 GitHub Actions secrets 中配置：`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`（aggregate 直写远端库、daily-digest 读取同源数据，必需）、`RESEND_API_KEY`（日报发信，必需）、`ARK_API_KEY`（标题/摘要翻译，可选）、`REPO_ALERT_TOKEN`（源失败自动开 Issue，可选）、`BAIDU_PUSH_TOKEN`（百度主动推送，可选；IndexNow 无需 secret，密钥即 `public/` 下的 32 位 hex txt）、`X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_SECRET`（X 每日一推，可选）。推广类步骤（SEO 推送、X 发帖）缺 secret 一律静默跳过且 `continue-on-error`，绝不影响日报主流程。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
 
 ### 写接口限流边界
 
