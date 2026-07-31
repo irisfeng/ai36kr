@@ -24,7 +24,8 @@ async function pushBaidu() {
     return;
   }
   try {
-    const res = await fetch(`http://data.zz.baidu.com/urls?site=${encodeURIComponent(SITE)}&token=${token}`, {
+    // 注意：site 参数不能 URL 编码（编码后百度报 "site init fail"）
+    const res = await fetch(`http://data.zz.baidu.com/urls?site=${SITE}&token=${token}`, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
       body: urls.join('\n'),
