@@ -37,9 +37,25 @@ export default async function PostPage({ params }) {
   const post = getPost(Number(id));
   if (!post) notFound();
 
+  // SEO/GEO：NewsArticle 结构化数据（来源、发布时间、原文出处）
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: post.title_zh || post.title,
+    ...(post.title_zh ? { alternativeHeadline: post.title } : {}),
+    datePublished: post.created_at,
+    inLanguage: post.title_zh ? 'zh-CN' : 'en',
+    author: { '@type': 'Organization', name: post.source },
+    publisher: { '@type': 'Organization', name: '听潮 TideWire' },
+    image: post.image_url ? [post.image_url] : ['https://aikr.shddai.net/og-cover.png'],
+    mainEntityOfPage: `https://aikr.shddai.net/post/${post.id}`,
+    ...(post.url ? { isBasedOn: post.url } : {}),
+  };
+
   return (
     <div className="container">
       <article className="article">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <div className="article-meta">
           <span className="post-source">{post.source}</span>
           <span className="post-cat-tag">{post.category}</span>

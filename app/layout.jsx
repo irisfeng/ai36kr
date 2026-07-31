@@ -39,12 +39,29 @@ export const viewport = {
   themeColor: '#F5F3ED',
 };
 
+// SEO/GEO：WebSite 结构化数据（声明站点实体 + 站内搜索动作）
+const SITE_JSONLD = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: '听潮 TideWire',
+  alternateName: '听潮',
+  url: 'https://aikr.shddai.net',
+  description: '中文 AI 行业新闻聚合与社区：聚合 37 个真实信息源，每 30 分钟更新，英文内容自动译为中文。',
+  inLanguage: 'zh-CN',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: { '@type': 'EntryPoint', urlTemplate: 'https://aikr.shddai.net/?q={search_term_string}' },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-CN">
       <head>
         {/* 中文字体全走系统栈（Songti SC/SimSun/Noto Serif CJK），零下载、零阻塞、LCP 即时；
             不引 Google Fonts（CJK 网页字体 CSS 阻塞渲染 + 字体交换延迟是 LCP 主因） */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSONLD) }} />
       </head>
       <body>
         <Nav />

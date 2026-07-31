@@ -1,0 +1,20 @@
+# 听潮 TideWire
+
+> 中文 AI 行业新闻聚合与社区。每 30 分钟聚合 37 个中英文权威信息源（中文科技媒体、英文科技媒体、OpenAI / Google DeepMind / Google Research / Hugging Face 等官方博客、Import AI / Interconnects 等深度专栏），英文内容由 LLM 自动译为中文。每日 08:00（北京时间）发布「今日 AI 一页」并推送邮件日报。
+
+## 核心页面
+
+- [首页](https://aikr.shddai.net/)：文章流（热度 / 最新 / 深度长读）+ 快讯 + 周热榜 + 新品榜
+- [今日一页](https://aikr.shddai.net/daily)：今日 AI 热词、最受关注 Top3、按分类分组的全部收录
+- [日报归档](https://aikr.shddai.net/daily/2026-07-31)：按北京日历日的永久存档页（替换日期可回看任意一天）
+- [快讯](https://aikr.shddai.net/flashes)：7×24 快讯时间线，自动打标 发布/融资/政策/数据/人事
+- [新品榜](https://aikr.shddai.net/launch)：AI 新品今日 / 本周榜单（Product Hunt 数据）
+- [RSS](https://aikr.shddai.net/rss.xml)：全站 RSS 订阅
+
+## 事实信息
+
+- 站点语言：中文（英文内容由 LLM 语境翻译为中文，术语经过校正）
+- 内容更新频率：每 30 分钟
+- 内容性质：新闻聚合与策展（每篇附原始来源链接），社区互动（投票 / 评论 / 表情反应）
+- 邮件日报：每日 08:00（北京时间），页内表单订阅，一键退订
+- 站点地址：https://aikr.shddai.net
