@@ -9,6 +9,7 @@ import { beijingNow } from '@/lib/time';
 const LINKS = [
   { href: '/', label: '首页' },
   { href: '/daily', label: '今日' },
+  { href: '/weekly', label: '周榜' },
   { href: '/flashes', label: '快讯' },
   { href: '/launch', label: '新品榜' },
   { href: '/submit', label: '投稿' },

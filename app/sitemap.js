@@ -7,7 +7,7 @@ export default function sitemap() {
   const posts = db
     .prepare('SELECT id, created_at FROM posts ORDER BY created_at DESC LIMIT 500')
     .all();
-  const staticPages = ['', '/daily', '/flashes', '/launch', '/submit'].map((p) => ({
+  const staticPages = ['', '/daily', '/weekly', '/flashes', '/launch', '/submit'].map((p) => ({
     url: `${SITE}${p}`,
     lastModified: new Date(),
     changeFrequency: 'hourly',
