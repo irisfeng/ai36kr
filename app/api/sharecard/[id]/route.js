@@ -5,11 +5,15 @@ import db from '@/lib/db';
 import { tideCoverSvg } from '@/lib/tide-cover';
 import { fetchPublicImage } from '@/lib/safe-image';
 import { dateGroup } from '@/lib/time';
+import { consumeRequestRateLimit } from '@/lib/rate-limit';
+import { rateLimitExceeded } from '@/lib/write-response';
 
 export const dynamic = 'force-dynamic';
 
 const SITE = 'https://aikr.shddai.net';
 const W = 780, PAD = 40;
+// 限流：每次请求可能触发外部抓取 + QR 生成，按 IP 30 次/分钟
+const SHARECARD_LIMIT = { scope: 'sharecard', limit: 30, windowMs: 60 * 1000 };
 
 function esc(s = '') {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -64,6 +68,8 @@ async function coverBlock(post, x, y, w, h) {
 }
 
 export async function GET(request, ctx) {
+  const requestLimit = consumeRequestRateLimit(request, SHARECARD_LIMIT);
+  if (!requestLimit.allowed) return rateLimitExceeded(requestLimit);
   const params = await ctx.params; // 兼容 sync/async params（Vercel 构建器差异）
   const id = Number(String(params.id).replace(/\.svg$/i, ''));
   if (!Number.isInteger(id) || id <= 0) {

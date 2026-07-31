@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchPublicImage, ImageProxyError } from '@/lib/safe-image';
+import { consumeRequestRateLimit } from '@/lib/rate-limit';
+import { rateLimitExceeded } from '@/lib/write-response';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,8 +10,13 @@ const ERROR_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
 };
 
+// 限流：开放图片代理按 IP 120 次/分钟（正常浏览远低于此，防刷带宽/函数时长）
+const IMG_LIMIT = { scope: 'img', limit: 120, windowMs: 60 * 1000 };
+
 // 分享卡片跨域缩略图代理：仅请求已解析并固定到公网地址的图片，不跟随重定向。
 export async function GET(request) {
+  const requestLimit = consumeRequestRateLimit(request, IMG_LIMIT);
+  if (!requestLimit.allowed) return rateLimitExceeded(requestLimit);
   const rawUrl = new URL(request.url).searchParams.get('u') || '';
   try {
     const image = await fetchPublicImage(rawUrl);

@@ -25,7 +25,7 @@ if (process.env.GITHUB_STEP_SUMMARY) {
     const lines = [
       '## 定时聚合',
       '',
-      `- 新增入库：**${result?.totalNew ?? 0}** 条；源在线：**${result?.okCount ?? 0}**`,
+      `- 新增入库：**${result?.totalNew ?? 0}** 条；源在线：**${result?.okCount ?? 0}**${result?.dbErrors ? `；⚠️ DB 写失败：**${result.dbErrors}**` : ''}`,
       `- 快照：${snapStats}`,
       `- 失败源（${failed.length}）：${failed.length ? failed.map((s) => `${s.name}（${(s.error || '未知').slice(0, 60)}）`).join('、') : '无'}`,
     ];

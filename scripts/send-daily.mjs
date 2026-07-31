@@ -20,13 +20,23 @@ const now = new Date(Date.now() + 8 * 3600000);
 const dateStr = `${now.getUTCFullYear()} 年 ${now.getUTCMonth() + 1} 月 ${now.getUTCDate()} 日`;
 const dateKey = now.toISOString().slice(0, 10); // 北京日历日，幂等键
 
-// 幂等闸门：今日已成功发送过（备份调度时点直接跳过，不重复打扰订阅者）
-const already = db.prepare('SELECT sent, failed FROM digest_log WHERE sent_date = ?').get(dateKey);
-if (already && already.sent > 0) {
+// 幂等闸门：今日已全量送达（failed=0）→ 备份时点跳过；
+// 有部分失败 → 本时点只补发失败名单，不重复打扰已送达的订阅者
+const already = db.prepare('SELECT sent, failed, failed_emails FROM digest_log WHERE sent_date = ?').get(dateKey);
+if (already && already.sent > 0 && already.failed === 0) {
   console.log(`今日日报已发送（${already.sent} 人），备份时点跳过`);
   summaryLines.push('## 日报邮件', '', `⏭️ 今日（${dateKey}）已发送过（成功 ${already.sent} 人），本时点跳过。`);
   flushSummary();
   process.exit(0);
+}
+let retryEmails = null;
+if (already && already.sent > 0 && already.failed > 0) {
+  retryEmails = new Set(JSON.parse(already.failed_emails || '[]'));
+  if (!retryEmails.size) {
+    console.log('存在失败计数但无失败名单（旧格式记录），备份时点跳过');
+    process.exit(0);
+  }
+  console.log(`补发模式：仅重投 ${retryEmails.size} 个失败邮箱`);
 }
 
 // 与 /daily 页一致的 24h 窗口（空则 48h）
@@ -64,7 +74,8 @@ for (const p of posts) {
 const groups = [...byCat.entries()].sort((a, b) => b[1].length - a[1].length);
 
 const subscribers = db.prepare('SELECT email, token FROM subscribers WHERE confirmed = 1').all();
-console.log(`日报内容：${posts.length} 条（${windowH}h），订阅者 ${subscribers.length} 人`);
+const targets = retryEmails ? subscribers.filter((s) => retryEmails.has(s.email)) : subscribers;
+console.log(`日报内容：${posts.length} 条（${windowH}h），订阅者 ${subscribers.length} 人${retryEmails ? `，本轮补发 ${targets.length} 人` : ''}`);
 
 if (!subscribers.length) {
   console.log('无已确认订阅者，跳过发送');
@@ -72,9 +83,14 @@ if (!subscribers.length) {
   flushSummary();
   process.exit(0);
 }
+if (!targets.length) {
+  console.log('失败名单中的邮箱已退订，无需补发');
+  process.exit(0);
+}
 
 let sent = 0, failed = 0;
-for (const sub of subscribers) {
+const failedEmails = [];
+for (const sub of targets) {
   try {
     await sendEmail({
       to: sub.email,
@@ -88,20 +104,20 @@ for (const sub of subscribers) {
     sent++;
   } catch (e) {
     failed++;
+    failedEmails.push(sub.email);
     console.warn(`发送失败 ${sub.email}: ${e.message}`);
   }
 }
 console.log(`日报发送完成：成功 ${sent} / 失败 ${failed}`);
 
-// 有成功才记账：全部失败不写 digest_log，留给备份时点重试
-if (sent > 0) {
-  db.prepare(
-    'INSERT OR REPLACE INTO digest_log (sent_date, sent, failed, created_at) VALUES (?, ?, ?, ?)'
-  ).run(dateKey, sent, failed, new Date().toISOString());
-}
+// 记账：累计成功数 + 本轮失败名单（全部失败也记，sent=0 时备份时点全量重试；
+// sent>0 且 failed>0 时备份时点按失败名单补发，已送达的不重复打扰）
+db.prepare(
+  'INSERT OR REPLACE INTO digest_log (sent_date, sent, failed, failed_emails, created_at) VALUES (?, ?, ?, ?, ?)'
+).run(dateKey, (already?.sent || 0) + sent, failed, JSON.stringify(failedEmails), new Date().toISOString());
 summaryLines.push(
   '## 日报邮件', '',
-  `${failed && !sent ? '❌' : '✅'} ${dateStr}：内容 ${posts.length} 条（${windowH}h），订阅者 ${subscribers.length} 人，成功 ${sent} / 失败 ${failed}。`,
+  `${failed && !sent ? '❌' : '✅'} ${dateStr}：内容 ${posts.length} 条（${windowH}h），订阅者 ${subscribers.length} 人，成功 ${sent} / 失败 ${failed}${retryEmails ? '（补发）' : ''}。`,
   '', `热词：${words.map((w) => w.word || w).join('、') || '-'}`
 );
 flushSummary();
