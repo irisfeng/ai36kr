@@ -29,7 +29,7 @@ export const metadata = {
     types: { 'application/rss+xml': '/rss.xml' },
   },
   manifest: '/manifest.json',
-  verification: { baidu: 'codeva-4qy8UC7zsF' },
+  verification: { other: { 'baidu-site-verification': 'codeva-4qy8UC7zsF' } },
 };
 
 // viewport-fit=cover：配合安全区 env()，iPhone 刘海/手势条不留白边
