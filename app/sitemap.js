@@ -1,4 +1,8 @@
 // 搜索引擎站点地图
+// 注意：metadata 路由默认在构建期预渲染，而构建期用空 scratch 库会得到空站点地图；
+// 强制动态（1 小时重算），保证词条/文章页来自真实数据库
+export const revalidate = 3600;
+
 import db from '@/lib/db';
 import { AI_KEYWORDS } from '@/lib/keywords';
 
