@@ -1,5 +1,8 @@
 import SubmitForm from '@/components/SubmitForm';
 
+// 无缓存指令的纯静态页会在构建期预渲染，把空库的脉搏条永久钉进 HTML → 动态渲染
+export const dynamic = 'force-dynamic';
+
 export const metadata = { title: '投稿 - 听潮' };
 
 export default function SubmitPage() {

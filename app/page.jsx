@@ -5,8 +5,9 @@ import { listPosts, weeklyTopPosts, latestFlashes, topProducts } from '@/lib/que
 import { CATEGORIES } from '@/lib/categories';
 import { timeAgo, timeHM } from '@/lib/time';
 
-// 边缘缓存 60s：投票/评论由客户端实时交互，SSR 陈旧一分钟无感；LCP 从 4.4s 降到亚秒
-export const revalidate = 60;
+// 本页读取 searchParams（sort/cat/q/page），按 Next 16 规则始终为请求时动态渲染，
+// revalidate 对它无效——要真 ISR 需把参数读取移出页面（useSearchParams + Suspense）
+export const dynamic = 'force-dynamic';
 
 const TABS = [
   { key: 'hot', label: '热度' },

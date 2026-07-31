@@ -27,6 +27,13 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, already: true });
   }
 
+  // 重发冷却：未确认订阅 10 分钟内重复提交不再发信（防邮件轰炸/发信配额消耗），
+  // 响应与正常发信一致，不暴露订阅状态
+  const RESEND_COOLDOWN_MS = 10 * 60 * 1000;
+  if (existing && Date.now() - new Date(existing.created_at).getTime() < RESEND_COOLDOWN_MS) {
+    return NextResponse.json({ ok: true });
+  }
+
   const token = existing?.token || randomBytes(24).toString('hex');
   if (existing) {
     db.prepare('UPDATE subscribers SET token = ?, created_at = ? WHERE email = ?')

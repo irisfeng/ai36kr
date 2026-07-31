@@ -149,6 +149,8 @@ export async function GET(request, ctx) {
       'Content-Type': 'image/svg+xml; charset=utf-8',
       'Cache-Control': 'public, max-age=300',
       'X-Content-Type-Options': 'nosniff',
+      // 纵深防御：海报以文档形式打开（新窗口查看原图）时禁止任何脚本执行
+      'Content-Security-Policy': "script-src 'none'",
     },
   });
 }
