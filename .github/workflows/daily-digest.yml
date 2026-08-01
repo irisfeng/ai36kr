@@ -64,11 +64,17 @@ jobs:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
-      - name: 提交海报
+      - name: 导出内容快照（main 分支每日一次：冷启动水合 / 灾难恢复）
+        run: node scripts/export-snapshot.mjs
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
+      - name: 提交海报与每日快照
         run: |
           git config user.name "tidewire-bot"
           git config user.email "tidewire-bot@users.noreply.github.com"
-          git add public/daily-card.html
+          git add public/daily-card.html data/snapshot.json
           if git diff --cached --quiet; then
             echo "海报无变化"
           else

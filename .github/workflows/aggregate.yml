@@ -1,8 +1,9 @@
 name: aggregate
 
-# 定时聚合全部 RSS 源并提交内容快照（data/snapshot.json）：
-# Vercel 关联仓库后，快照提交会触发自动部署，新部署自带最新内容；
-# serverless 冷启动时从快照水合，站点永不空白。
+# 定时聚合全部 RSS 源：直写 Turso（站点实时数据源），内容快照提交到独立
+# snapshot 分支作为备份（Vercel 只监听 main，从此快照提交不再触发部署，
+# 每天节省 ~48 次构建）。main 分支的数据快照由 daily-digest 每日更新一次，
+# 供冷启动水合/灾难恢复用。
 on:
   schedule:
     - cron: '*/30 * * * *'
@@ -32,7 +33,7 @@ jobs:
       - run: npm ci
 
       - name: 聚合全部信息源并导出快照
-        run: node scripts/aggregate.mjs
+        run: node scripts/aggregate.mjs && cp data/snapshot.json /tmp/snapshot.json
         timeout-minutes: 10
         env:
           # LLM 语境翻译通道（火山方舟）；缺失时自动回退 gtx 机翻
@@ -44,19 +45,23 @@ jobs:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
-      - name: 提交快照
+      - name: 提交快照到 snapshot 分支（不触发 Vercel 部署）
         run: |
           git config user.name "tidewire-bot"
           git config user.email "tidewire-bot@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin snapshot >/dev/null 2>&1; then
+            git fetch origin snapshot:snapshot
+            git checkout snapshot
+          else
+            git checkout --orphan snapshot
+            git rm -rf . 2>/dev/null || true
+          fi
+          mkdir -p data
+          cp /tmp/snapshot.json data/snapshot.json
           git add data/snapshot.json
           if git diff --cached --quiet; then
             echo "内容无变化，跳过提交"
           else
             git commit -m "chore(snapshot): 定时聚合 $(date -u +'%Y-%m-%d %H:%M UTC')"
-            # 跨 workflow 并发组外的残余竞争兜底：rebase 后重试推送
-            for i in 1 2 3; do
-              git pull --rebase origin main && git push && exit 0
-              sleep 5
-            done
-            exit 1
+            git push origin snapshot
           fi
