@@ -1,85 +1,30 @@
 import Link from 'next/link';
-import PostCard from '@/components/PostCard';
+import { Suspense } from 'react';
 import SubscribeForm from '@/components/SubscribeForm';
+import HomeFeed from '@/components/HomeFeed';
 import { listPosts, weeklyTopPosts, latestFlashes, topProducts } from '@/lib/queries';
 import { CATEGORIES } from '@/lib/categories';
 import { timeAgo, timeHM } from '@/lib/time';
 
-// 本页读取 searchParams（sort/cat/q/page），按 Next 16 规则始终为请求时动态渲染，
-// revalidate 对它无效——要真 ISR 需把参数读取移出页面（useSearchParams + Suspense）
-export const dynamic = 'force-dynamic';
+// 首页 = 可缓存静态壳（ISR 300s）+ 客户端动态信息流：
+// 默认「热度」由本文件静态直出并边缘缓存 5 分钟，大多数请求不触发 Function/Turso；
+// 切 tab / 搜索 / 分类 / 翻页由 HomeFeed 客户端改打 /api/posts
+export const revalidate = 300;
 
-const TABS = [
-  { key: 'hot', label: '热度' },
-  { key: 'new', label: '最新' },
-  { key: 'deep', label: '深度长读' },
-];
-const PAGE_SIZE = 50;
-
-export default async function HomePage({ searchParams }) {
-  // Next 15+：searchParams 是 Promise，必须 await，同步访问全部得到 undefined
-  const sp = await searchParams;
-  const sort = ['hot', 'new', 'deep'].includes(sp.sort) ? sp.sort : 'hot';
-  const cat = sp.cat || '';
-  const q = (sp.q || '').trim();
-  const requestedPage = Number(sp.page);
-  const page = Number.isInteger(requestedPage) && requestedPage > 0 && requestedPage <= 200
-    ? requestedPage
-    : 1;
-
+export default async function HomePage() {
   const [posts, hot5, flashes, products] = await Promise.all([
-    listPosts({ sort, cat, q, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }),
+    listPosts({ sort: 'hot', limit: 50, offset: 0 }),
     weeklyTopPosts(5),
     latestFlashes(5),
     topProducts(3),
   ]);
 
-  function tabHref(key) {
-    const p = new URLSearchParams();
-    if (key !== 'hot') p.set('sort', key);
-    if (cat) p.set('cat', cat);
-    return `/?${p.toString()}`;
-  }
-
-  function pageHref(nextPage) {
-    const p = new URLSearchParams();
-    if (sort !== 'hot') p.set('sort', sort);
-    if (cat) p.set('cat', cat);
-    if (q) p.set('q', q);
-    if (nextPage > 1) p.set('page', String(nextPage));
-    return `/?${p.toString()}`;
-  }
-
   return (
     <div className="container page-grid">
       <main className="main-col">
-        {q ? (
-          <div className="page-head" style={{ paddingTop: 0 }}>
-            <h1 style={{ fontSize: 22 }}>「{q}」的搜索结果</h1>
-            <p>第 {page} 页 · 本页 {posts.length} 篇 · <Link href="/" style={{ color: 'var(--accent)' }}>清除搜索</Link></p>
-          </div>
-        ) : (
-          <nav className="tabs">
-            {TABS.map((t) => (
-              <Link key={t.key} href={tabHref(t.key)} className={sort === t.key && !q ? 'active' : ''}>
-                {t.label}
-              </Link>
-            ))}
-            {cat && (
-              <span style={{ marginLeft: 'auto', alignSelf: 'center', fontSize: 13, color: 'var(--ink-3)' }}>
-                分类：{cat} · <Link href="/" style={{ color: 'var(--accent)' }}>取消筛选</Link>
-              </span>
-            )}
-          </nav>
-        )}
-        {posts.length === 0 && <div className="empty">没有找到相关内容，换个关键词试试。</div>}
-        {posts.map((p) => <PostCard key={p.id} post={p} />)}
-        {(page > 1 || posts.length === PAGE_SIZE) && (
-          <nav className="tabs" aria-label="文章翻页" style={{ justifyContent: 'space-between', marginTop: 24 }}>
-            <span>{page > 1 ? <Link href={pageHref(page - 1)}>← 上一页</Link> : null}</span>
-            <span>{posts.length === PAGE_SIZE ? <Link href={pageHref(page + 1)}>下一页 →</Link> : null}</span>
-          </nav>
-        )}
+        <Suspense fallback={posts.map((p) => <div key={p.id} />)}>
+          <HomeFeed initialPosts={posts} />
+        </Suspense>
       </main>
 
       <aside className="side-col">
