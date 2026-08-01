@@ -96,3 +96,24 @@ export default function HomeFeed({ initialPosts }) {
     </>
   );
 }
+
+
+// SSR 静态版信息流：不含任何 hook，用作 Suspense fallback，
+// 保证首屏 HTML 带完整文章卡片（SEO / 首屏 / 内容断言）
+export function FeedStatic({ posts }) {
+  return (
+    <>
+      <nav className="tabs">
+        <Link href="/" className="active">热度</Link>
+        <Link href="/?sort=new">最新</Link>
+        <Link href="/?sort=deep">深度长读</Link>
+      </nav>
+      {posts.map((p) => <PostCard key={p.id} post={p} />)}
+      {posts.length === 50 && (
+        <nav className="tabs" aria-label="文章翻页" style={{ justifyContent: 'flex-end', marginTop: 24 }}>
+          <Link href="/?page=2">下一页 →</Link>
+        </nav>
+      )}
+    </>
+  );
+}

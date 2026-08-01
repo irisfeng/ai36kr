@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import SubscribeForm from '@/components/SubscribeForm';
-import HomeFeed from '@/components/HomeFeed';
+import HomeFeed, { FeedStatic } from '@/components/HomeFeed';
 import { listPosts, weeklyTopPosts, latestFlashes, topProducts } from '@/lib/queries';
 import { CATEGORIES } from '@/lib/categories';
 import { timeAgo, timeHM } from '@/lib/time';
 
 // 首页 = 可缓存静态壳（ISR 300s）+ 客户端动态信息流：
 // 默认「热度」由本文件静态直出并边缘缓存 5 分钟，大多数请求不触发 Function/Turso；
+// Suspense fallback 渲染完整文章列表（SEO/首屏有真实内容），
 // 切 tab / 搜索 / 分类 / 翻页由 HomeFeed 客户端改打 /api/posts
 export const revalidate = 300;
 
@@ -22,7 +23,7 @@ export default async function HomePage() {
   return (
     <div className="container page-grid">
       <main className="main-col">
-        <Suspense fallback={posts.map((p) => <div key={p.id} />)}>
+        <Suspense fallback={<FeedStatic posts={posts} />}>
           <HomeFeed initialPosts={posts} />
         </Suspense>
       </main>
