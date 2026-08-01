@@ -825,3 +825,7 @@ a.product-link:hover { color: var(--red); }
 .wc-bar { width: 100%; background: var(--ink); opacity: 0.82; }
 .wc-col:last-child .wc-bar { background: var(--red); opacity: 1; }
 .wc-d { font-family: var(--mono); font-size: 9px; color: var(--ink-3); white-space: nowrap; }
+
+/* 页脚作者手记链接 */
+.f-note { color: var(--ink-3); border-bottom: 1px solid var(--line); transition: color 0.15s, border-color 0.15s; }
+.f-note:hover { color: var(--red); border-color: var(--red); }

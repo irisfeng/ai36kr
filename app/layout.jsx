@@ -72,6 +72,9 @@ export default function RootLayout({ children }) {
           <div className="container footer-inner">
             <span className="f-logo">听潮</span>
             <span>关于听潮 · 聚合全网 AI 资讯，观点来自社区</span>
+            <a className="f-note" href="https://mp.weixin.qq.com/s/GDvzQTFpTSTuBOTEfj5djg" target="_blank" rel="noopener noreferrer">
+              手记 · 一个人，和一台不会替你负责的机器 ↗
+            </a>
             <span className="footer-subscribe">
               <SubscribeForm compact />
             </span>
