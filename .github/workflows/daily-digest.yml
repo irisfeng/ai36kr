@@ -70,6 +70,27 @@ jobs:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
+      - name: 全量数据库备份（10 表 JSONL，snapshot 分支滚动保留 14 份）
+        run: |
+          node scripts/backup-db.mjs backup
+          git config user.name "tidewire-bot"
+          git config user.email "tidewire-bot@users.noreply.github.com"
+          git fetch origin snapshot:snapshot || true
+          git worktree add /tmp/snap snapshot 2>/dev/null || (git checkout --orphan snapshot && git rm -rf . && git worktree add /tmp/snap snapshot)
+          mkdir -p /tmp/snap/backup
+          cp backup/*.jsonl.gz /tmp/snap/backup/
+          cd /tmp/snap
+          git add backup/
+          if git diff --cached --quiet; then
+            echo "备份无变化"
+          else
+            git commit -m "chore(backup): 全量备份 $(date -u +'%Y-%m-%d')"
+            git push origin snapshot
+          fi
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
       - name: 提交海报与每日快照
         run: |
           git config user.name "tidewire-bot"

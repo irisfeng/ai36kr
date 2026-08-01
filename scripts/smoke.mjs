@@ -22,5 +22,18 @@ for (const p of pages) {
     console.log(`✗ ERR ${p} ${e.message}`);
   }
 }
-if (failed) { console.error(`\n${failed} 个页面失败`); process.exit(1); }
-console.log(`\n全部 ${pages.length} 个页面通过 @ ${base}`);
+
+// 内容级断言：HTTP 200 不等于页面有料（构建期空库预渲染空首页的教训）
+const home = await (await fetch(`${base}/`)).text();
+const assertions = [
+  ['首页含文章卡片', home.includes('post-card')],
+  ['首页非空结果占位', !home.includes('没有找到相关内容')],
+];
+const pulse = await (await fetch(`${base}/api/pulse`)).json().catch(() => null);
+assertions.push(['脉搏有在线源', !!pulse && pulse.sources?.some((s) => s.ok)]);
+for (const [label, ok] of assertions) {
+  if (!ok) failed++;
+  console.log(`${ok ? '✓' : '✗'} 断言:${label}`);
+}
+if (failed) { console.error(`\n${failed} 项失败（含内容断言）`); process.exit(1); }
+console.log(`\n全部 ${pages.length} 个页面 + ${assertions.length} 项内容断言通过 @ ${base}`);
