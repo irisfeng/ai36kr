@@ -49,19 +49,30 @@ jobs:
         run: |
           git config user.name "tidewire-bot"
           git config user.email "tidewire-bot@users.noreply.github.com"
+          repo_root="$PWD"
+          snapshot_worktree="$(mktemp -d)"
+          cleanup_snapshot_worktree() {
+            cd "$repo_root"
+            git worktree remove --force "$snapshot_worktree" 2>/dev/null || true
+          }
+          trap cleanup_snapshot_worktree EXIT
+
           if git ls-remote --exit-code --heads origin snapshot >/dev/null 2>&1; then
             git fetch origin snapshot:snapshot
-            git checkout snapshot
+            git worktree add "$snapshot_worktree" snapshot
           else
+            git worktree add --detach "$snapshot_worktree" HEAD
+            cd "$snapshot_worktree"
             git checkout --orphan snapshot
             git rm -rf . 2>/dev/null || true
           fi
-          mkdir -p data
-          cp /tmp/snapshot.json data/snapshot.json
+          mkdir -p "$snapshot_worktree/data"
+          cp /tmp/snapshot.json "$snapshot_worktree/data/snapshot.json"
+          cd "$snapshot_worktree"
           git add data/snapshot.json
           if git diff --cached --quiet; then
             echo "内容无变化，跳过提交"
           else
             git commit -m "chore(snapshot): 定时聚合 $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push origin snapshot
+            git push origin HEAD:snapshot
           fi
