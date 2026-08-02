@@ -79,8 +79,9 @@ jobs:
           git worktree add /tmp/snap snapshot 2>/dev/null || (git checkout --orphan snapshot && git rm -rf . && git worktree add /tmp/snap snapshot)
           mkdir -p /tmp/snap/backup
           cp backup/*.jsonl.gz /tmp/snap/backup/
+          printf '{\n  "ignoreCommand": "exit 0"\n}\n' > /tmp/snap/vercel.json
           cd /tmp/snap
-          git add backup/
+          git add backup/ vercel.json
           if git diff --cached --quiet; then
             echo "备份无变化"
           else
