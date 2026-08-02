@@ -7,13 +7,15 @@ import path from 'node:path';
 import db from '../lib/db.js';
 
 const SITE = 'https://aikr.shddai.net';
-const MAX_URLS = 50; // 百度新站配额有限（通常 ~30/天），只推最新的
+const INDEXNOW_MAX_URLS = 50; // IndexNow 可一次接收更多近 24h URL
+const BAIDU_MAX_URLS = 10; // 百度新站配额更紧，保守只推最新 10 条
 
 const rows = db.prepare(
   `SELECT id FROM posts WHERE created_at >= ? ORDER BY created_at DESC LIMIT ?`
-).all(new Date(Date.now() - 24 * 3600000).toISOString(), MAX_URLS);
+).all(new Date(Date.now() - 24 * 3600000).toISOString(), INDEXNOW_MAX_URLS);
 const urls = rows.map((r) => `${SITE}/post/${r.id}`);
-console.log(`待推送 URL：${urls.length} 条（近 24h）`);
+const baiduUrls = urls.slice(0, BAIDU_MAX_URLS);
+console.log(`待推送 URL：${urls.length} 条（近 24h；百度本轮最多 ${baiduUrls.length} 条）`);
 if (!urls.length) process.exit(0);
 
 // ---- 百度主动推送 ----
@@ -28,9 +30,13 @@ async function pushBaidu() {
     const res = await fetch(`http://data.zz.baidu.com/urls?site=${SITE}&token=${token}`, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
-      body: urls.join('\n'),
+      body: baiduUrls.join('\n'),
     });
     const text = await res.text();
+    if (res.status === 400 && /over quota/i.test(text)) {
+      console.warn('百度：今日配额已用尽，跳过本轮；IndexNow 继续');
+      return;
+    }
     console.log(`百度：HTTP ${res.status} ${text.slice(0, 200)}`);
   } catch (e) {
     console.warn(`百度推送失败（不影响其他通道）: ${e.message}`);

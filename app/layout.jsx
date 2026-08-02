@@ -65,8 +65,10 @@ export default function RootLayout({ children }) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSONLD) }} />
       </head>
       <body>
-        <Nav />
-        <PulseBar />
+        <div className="site-header">
+          <Nav />
+          <PulseBar />
+        </div>
         {children}
         <footer className="footer">
           <div className="container footer-inner">
