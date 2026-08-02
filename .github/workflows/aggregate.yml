@@ -68,8 +68,11 @@ jobs:
           fi
           mkdir -p "$snapshot_worktree/data"
           cp /tmp/snapshot.json "$snapshot_worktree/data/snapshot.json"
+          # snapshot 分支自带 ignoreCommand：Vercel 检出该分支即整分支跳过构建
+          #（ignoreCommand 按被部署分支读取，主仓库 vercel.json 对本分支无效）
+          printf '{\n  "ignoreCommand": "exit 0"\n}\n' > "$snapshot_worktree/vercel.json"
           cd "$snapshot_worktree"
-          git add data/snapshot.json
+          git add data/snapshot.json vercel.json
           if git diff --cached --quiet; then
             echo "内容无变化，跳过提交"
           else
