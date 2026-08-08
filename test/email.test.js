@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { confirmEmailHtml, dailyEmailHtml } from '../lib/email.js';
+import { welcomeEmailHtml, dailyEmailHtml } from '../lib/email.js';
 
 const PAYLOAD = '<img src="https://attacker.invalid/pixel">';
 
-test('confirmation email escapes URL text and attribute contexts', () => {
-  const html = confirmEmailHtml({
-    confirmUrl: `https://example.test/confirm?token="><svg/onload=alert(1)>`,
+test('welcome email escapes URL text and attribute contexts', () => {
+  const html = welcomeEmailHtml({
+    unsubUrl: `https://example.test/unsubscribe?token="><svg/onload=alert(1)>`,
   });
 
   assert.doesNotMatch(html, /<svg/i);

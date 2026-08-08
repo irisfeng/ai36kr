@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 
-// 日报订阅表单：邮箱 → 确认邮件 → 完成
+// 日报订阅表单：填邮箱即订阅（single opt-in），欢迎信内附一键退订
 export default function SubscribeForm({ compact = false }) {
   const [email, setEmail] = useState('');
+  const [website, setWebsite] = useState(''); // 蜜罐：人类不可见，机器人会填
   const [state, setState] = useState('idle'); // idle | sending | sent | error
   const [msg, setMsg] = useState('');
 
@@ -17,12 +18,12 @@ export default function SubscribeForm({ compact = false }) {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '订阅失败');
       setState('sent');
-      setMsg(data.already ? '你已订阅过，日报照常发送 📮' : '确认邮件已发出，点邮件里的按钮完成订阅');
+      setMsg(data.already ? '你已订阅过，日报照常发送 📮' : '订阅成功，明早 8 点见 📮');
     } catch (err) {
       setState('error');
       setMsg(err.message);
@@ -42,6 +43,17 @@ export default function SubscribeForm({ compact = false }) {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         aria-label="订阅邮箱"
+      />
+      {/* 蜜罐字段：用 CSS 藏到视口外，真人永远填不到；机器人填了服务端直接丢弃 */}
+      <input
+        type="text"
+        name="website"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }}
       />
       <button type="submit" disabled={state === 'sending'}>
         {state === 'sending' ? '发送中…' : '订阅日报'}

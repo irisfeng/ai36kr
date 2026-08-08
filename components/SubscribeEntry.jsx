@@ -36,7 +36,7 @@ export default function SubscribeEntry() {
         <div className="sm-row">
           <div className="sm-row-title"><span className="sm-mark" />邮箱日报</div>
           <SubscribeForm />
-          <p className="sm-note">热词 + 最受关注 Top3 + 分类收录，随时一键退订</p>
+          <p className="sm-note">热词 + 最受关注 Top3 + 分类收录，填邮箱即订阅，随时一键退订</p>
         </div>
         <div className="sm-row">
           <div className="sm-row-title"><span className="sm-mark" />RSS</div>

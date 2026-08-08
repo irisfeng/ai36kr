@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'node:crypto';
 import db from '@/lib/db';
-import { sendEmail, confirmEmailHtml } from '@/lib/email';
+import { sendEmail, welcomeEmailHtml } from '@/lib/email';
 import { consumeRequestRateLimit } from '@/lib/rate-limit';
 import { rateLimitExceeded } from '@/lib/write-response';
 
@@ -17,6 +17,12 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
+
+  // 蜜罐：正常用户看不到 website 字段，填了即机器人——假装成功，不写库不发信
+  if (String(body.website || '').trim()) {
+    return NextResponse.json({ ok: true });
+  }
+
   const email = String(body.email || '').trim().toLowerCase().slice(0, 120);
   if (!EMAIL_RE.test(email)) {
     return NextResponse.json({ error: '邮箱格式不正确' }, { status: 400 });
@@ -27,30 +33,27 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, already: true });
   }
 
-  // 重发冷却：未确认订阅 10 分钟内重复提交不再发信（防邮件轰炸/发信配额消耗），
-  // 响应与正常发信一致，不暴露订阅状态
-  const RESEND_COOLDOWN_MS = 10 * 60 * 1000;
-  if (existing && Date.now() - new Date(existing.created_at).getTime() < RESEND_COOLDOWN_MS) {
-    return NextResponse.json({ ok: true });
-  }
-
-  const token = existing?.token || randomBytes(24).toString('hex');
+  // 单击订阅（single opt-in）：确认环节流失率高，改为填邮箱即生效。
+  // 滥用出口：IP 限流 + 蜜罐 + 欢迎信/每封日报内一键退订 + 发送失败自动退订
+  const token = randomBytes(24).toString('hex');
+  const now = new Date().toISOString();
   if (existing) {
-    db.prepare('UPDATE subscribers SET token = ?, created_at = ? WHERE email = ?')
-      .run(token, new Date().toISOString(), email);
+    db.prepare('UPDATE subscribers SET token = ?, confirmed = 1, confirmed_at = ? WHERE email = ?')
+      .run(token, now, email);
   } else {
-    db.prepare('INSERT INTO subscribers (email, token, confirmed, created_at) VALUES (?, ?, 0, ?)')
-      .run(email, token, new Date().toISOString());
+    db.prepare('INSERT INTO subscribers (email, token, confirmed, created_at, confirmed_at) VALUES (?, ?, 1, ?, ?)')
+      .run(email, token, now, now);
   }
 
+  // 欢迎信发失败不阻塞订阅（已生效，日报照发），仅记日志
   try {
     await sendEmail({
       to: email,
-      subject: '确认订阅：听潮 · 今日 AI 一页',
-      html: confirmEmailHtml({ confirmUrl: `${SITE}/api/subscribe/confirm?token=${token}` }),
+      subject: '订阅成功：听潮 · 今日 AI 一页',
+      html: welcomeEmailHtml({ unsubUrl: `${SITE}/api/subscribe/unsubscribe?token=${token}` }),
     });
   } catch (e) {
-    return NextResponse.json({ error: '确认邮件发送失败，请稍后重试' }, { status: 502 });
+    console.error('[订阅] 欢迎信发送失败（订阅已生效）:', e.message);
   }
   return NextResponse.json({ ok: true });
 }
