@@ -10,6 +10,7 @@ import {
   verifyWechatSignature,
 } from '../lib/wechat.js';
 import { createWechatCard } from '../lib/wechat-cards.js';
+import { WECHAT_MENU } from '../lib/wechat-menu.js';
 
 function signature(token, timestamp, nonce) {
   return createHash('sha1').update([token, timestamp, nonce].sort().join('')).digest('hex');
@@ -54,6 +55,19 @@ test('routes exact keywords and CLICK event keys to content intents', () => {
   assert.equal(resolveWechatIntent({ msgType: 'text', content: 'AI 快讯' }), 'flashes');
   assert.equal(resolveWechatIntent({ msgType: 'event', event: 'click', eventKey: 'WEEKLY' }), 'weekly');
   assert.equal(resolveWechatIntent({ msgType: 'text', content: '日报怎么做' }), null);
+});
+
+test('publishes three direct menu actions using the supported CLICK event keys', () => {
+  assert.deepEqual(WECHAT_MENU, {
+    button: [
+      { type: 'click', name: '今日日报', key: 'DAILY' },
+      { type: 'click', name: '本周热榜', key: 'WEEKLY' },
+      { type: 'click', name: 'AI快讯', key: 'FLASHES' },
+    ],
+  });
+  for (const button of WECHAT_MENU.button) {
+    assert.ok(resolveWechatIntent({ msgType: 'event', event: 'click', eventKey: button.key }));
+  }
 });
 
 test('subscribe gets the welcome reply and unknown text gets help', () => {
