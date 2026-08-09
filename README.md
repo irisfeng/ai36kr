@@ -138,8 +138,8 @@ data/tidewire.db      # 本地 SQLite 数据库（首次访问自动生成）
 | `NEXT_PUBLIC_SITE_URL` | 生产推荐 | 站点规范 origin，例如 `https://your-domain.example`；用于 serverless 实例触发受保护的刷新函数 |
 | `ARK_API_KEY` | 可选 | 火山方舟标题翻译；缺失时回退到公开翻译端点 |
 | `WECHAT_TOKEN` | 公众号接入时必需 | 微信公众平台「服务器配置」中自定义的高熵 Token；用于 `/api/wechat` 回调验签，不是 AppSecret |
-| `WECHAT_APP_ID` | 同步自定义菜单时必需 | 公众号 AppID；仅供 `npm run wechat:menu:sync` 获取接口凭证 |
-| `WECHAT_APP_SECRET` | 同步自定义菜单时必需 | 公众号 AppSecret；只通过受保护的环境变量提供，不得提交或输出到日志 |
+| `WECHAT_APP_ID` | 本地同步自定义菜单时必需 | 公众号 AppID；仅供 `npm run wechat:menu:sync` 获取接口凭证 |
+| `WECHAT_APP_SECRET` | 同步自定义菜单时必需 | 公众号 AppSecret；放入 GitHub Actions Secret，不得提交或输出到日志 |
 
 ### 微信公众号动态图文回复
 
@@ -151,7 +151,7 @@ data/tidewire.db      # 本地 SQLite 数据库（首次访问自动生成）
 
 接口支持平台 GET 验证与 POST 被动回复。用户回复「日报 / 今日听潮」「周榜 / 精选」「快讯 / AI快讯 / 7×24 / 7x24」「关于 / 听潮AI」，会收到可直接点击的单图文卡片；卡片标题与摘要读取当前 Turso 内容。
 
-运行 `npm run wechat:menu:sync` 会发布三个直接触发动态卡片的底部菜单：`今日日报`、`本周热榜`、`AI快讯`。该命令需要临时环境变量 `WECHAT_APP_ID` 与 `WECHAT_APP_SECRET`；运行时接口仍只需要 `WECHAT_TOKEN`，不会读取 AppSecret。
+运行 `npm run wechat:menu:sync` 会发布三个直接触发动态卡片的底部菜单：`今日日报`、`本周热榜`、`AI快讯`。生产同步通过 GitHub Actions 的 `sync-wechat-menu` 手动工作流执行：先在仓库 Actions Secret 中配置 `WECHAT_APP_SECRET`，再手动运行该工作流。站点运行时仍只需要 `WECHAT_TOKEN`，不会读取 AppSecret。
 
 部署后还需在 GitHub Actions secrets 中配置：`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`（aggregate 直写远端库、daily-digest 读取同源数据，必需）、`RESEND_API_KEY`（日报发信，必需）、`ARK_API_KEY`（标题/摘要翻译，可选）、`REPO_ALERT_TOKEN`（源失败自动开 Issue，可选）、`BAIDU_PUSH_TOKEN`（百度主动推送，可选；IndexNow 无需 secret，密钥即 `public/` 下的 32 位 hex txt）、`X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_SECRET`（X 每日一推，可选）。推广类步骤（SEO 推送、X 发帖）缺 secret 一律静默跳过且 `continue-on-error`，绝不影响日报主流程。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
 

@@ -1,0 +1,24 @@
+name: sync-wechat-menu
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 发布微信公众号一键菜单
+        run: npm run wechat:menu:sync
+        env:
+          WECHAT_APP_ID: wx692f79e8fa443ab8
+          WECHAT_APP_SECRET: ${{ secrets.WECHAT_APP_SECRET }}
