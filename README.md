@@ -137,6 +137,17 @@ data/tidewire.db      # 本地 SQLite 数据库（首次访问自动生成）
 | `TURSO_AUTH_TOKEN` | 与 Turso URL 配套必需 | Turso 访问令牌 |
 | `NEXT_PUBLIC_SITE_URL` | 生产推荐 | 站点规范 origin，例如 `https://your-domain.example`；用于 serverless 实例触发受保护的刷新函数 |
 | `ARK_API_KEY` | 可选 | 火山方舟标题翻译；缺失时回退到公开翻译端点 |
+| `WECHAT_TOKEN` | 公众号接入时必需 | 微信公众平台「服务器配置」中自定义的高熵 Token；用于 `/api/wechat` 回调验签，不是 AppSecret |
+
+### 微信公众号动态图文回复
+
+部署并配置 `WECHAT_TOKEN` 后，在微信公众平台「设置与开发 → 基本配置 → 服务器配置」填写：
+
+- URL：`https://你的生产域名/api/wechat`
+- Token：与 `WECHAT_TOKEN` 完全一致
+- 消息加解密方式：先选「明文模式」完成最小闭环
+
+接口支持平台 GET 验证与 POST 被动回复。用户回复「日报 / 今日听潮」「周榜 / 精选」「快讯 / AI快讯 / 7×24 / 7x24」「关于 / 听潮AI」，会收到可直接点击的单图文卡片；卡片标题与摘要读取当前 Turso 内容。自定义菜单若使用 CLICK 事件，可分别设置 key 为 `DAILY`、`WEEKLY`、`FLASHES`、`ABOUT`。被动回复只需要 Token，不需要把公众号 AppSecret 配进项目。
 
 部署后还需在 GitHub Actions secrets 中配置：`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`（aggregate 直写远端库、daily-digest 读取同源数据，必需）、`RESEND_API_KEY`（日报发信，必需）、`ARK_API_KEY`（标题/摘要翻译，可选）、`REPO_ALERT_TOKEN`（源失败自动开 Issue，可选）、`BAIDU_PUSH_TOKEN`（百度主动推送，可选；IndexNow 无需 secret，密钥即 `public/` 下的 32 位 hex txt）、`X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_SECRET`（X 每日一推，可选）。推广类步骤（SEO 推送、X 发帖）缺 secret 一律静默跳过且 `continue-on-error`，绝不影响日报主流程。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
 
