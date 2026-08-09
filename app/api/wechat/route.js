@@ -5,7 +5,6 @@ import {
   renderWechatTextReply,
   verifyWechatSignature,
 } from '@/lib/wechat';
-import { loadWechatCard } from '@/lib/wechat-cards';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,9 +57,13 @@ export async function POST(request) {
   const action = classifyWechatMessage(message);
   if (action.type === 'empty') return new Response('success');
 
-  const reply = action.type === 'card'
-    ? renderWechatNewsReply(message, loadWechatCard(action.intent))
-    : renderWechatTextReply(message, action.text);
+  let reply;
+  if (action.type === 'card') {
+    const { loadWechatCard } = await import('@/lib/wechat-cards');
+    reply = renderWechatNewsReply(message, loadWechatCard(action.intent));
+  } else {
+    reply = renderWechatTextReply(message, action.text);
+  }
 
   return new Response(reply, {
     headers: {
