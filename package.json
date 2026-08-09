@@ -9,7 +9,8 @@
     "start": "next start",
     "test": "node --test --test-concurrency=1 test/*.test.js",
     "smoke": "node scripts/smoke.mjs",
-    "smoke:prod": "node scripts/smoke.mjs https://aikr.shddai.net"
+    "smoke:prod": "node scripts/smoke.mjs https://aikr.shddai.net",
+    "wechat:menu:sync": "node scripts/sync-wechat-menu.mjs"
   },
   "dependencies": {
     "libsql": "^0.5.29",
