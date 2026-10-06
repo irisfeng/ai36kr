@@ -3,8 +3,7 @@
 // 幂等：digest_log 按北京日历日去重——多时点调度下首个成功运行的实例发送，其余时点跳过
 import fs from 'node:fs';
 import db from '../lib/db.js';
-import { attachReactions } from '../lib/queries.js';
-import { hotWords } from '../lib/keywords.js';
+import { loadLatestEdition } from '../lib/queries.js';
 import { sendEmail, dailyEmailHtml } from '../lib/email.js';
 
 const SITE = 'https://aikr.shddai.net';
@@ -39,20 +38,11 @@ if (already && already.sent > 0 && already.failed > 0) {
   console.log(`补发模式：仅重投 ${retryEmails.size} 个失败邮箱`);
 }
 
-// 与 /daily 页一致的 24h 窗口（空则 48h）
-let windowH = 24;
-let rows = db.prepare(
-  `SELECT p.*, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-   FROM posts p WHERE p.created_at >= ? ORDER BY p.created_at DESC LIMIT 200`
-).all(new Date(Date.now() - 24 * 3600000).toISOString());
-if (!rows.length) {
-  windowH = 48;
-  rows = db.prepare(
-    `SELECT p.*, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-     FROM posts p WHERE p.created_at >= ? ORDER BY p.created_at DESC LIMIT 200`
-  ).all(new Date(Date.now() - 48 * 3600000).toISOString());
-}
-if (!rows.length) {
+// 与 /daily 页同一份编排（最近 24h，空则 48h）
+const edition = loadLatestEdition();
+const windowH = edition.windowHours;
+const posts = edition.main;
+if (!edition.headline) {
   // 48h 仍无内容 = 数据链路故障，而非"今天没新闻"：不发空邮件，
   // 以失败退出触发 GitHub 告警，后续备份时点会自动重试
   summaryLines.push('## 日报邮件', '', '❌ 48h 窗口无任何内容（数据链路疑似中断），未发送，等待备份时点重试。');
@@ -60,18 +50,6 @@ if (!rows.length) {
   console.error('48h 窗口无内容，疑似数据链路故障，退出（备份时点将重试）');
   process.exit(1);
 }
-
-const posts = attachReactions(rows);
-const words = hotWords(posts, 8);
-const attention = (p) => (p.up - p.down) + Object.values(p.reactions || {}).reduce((a, b) => a + b, 0);
-const top3 = [...posts].sort((a, b) => attention(b) - attention(a)).slice(0, 3);
-
-const byCat = new Map();
-for (const p of posts) {
-  if (!byCat.has(p.category)) byCat.set(p.category, []);
-  byCat.get(p.category).push(p);
-}
-const groups = [...byCat.entries()].sort((a, b) => b[1].length - a[1].length);
 
 const subscribers = db.prepare('SELECT email, token FROM subscribers WHERE confirmed = 1').all();
 const targets = retryEmails ? subscribers.filter((s) => retryEmails.has(s.email)) : subscribers;
@@ -94,9 +72,10 @@ for (const sub of targets) {
   try {
     await sendEmail({
       to: sub.email,
-      subject: `听潮 · 今日 AI 一页（${dateStr}）`,
+      // 标题用头条：比固定的刊名更值得点开
+      subject: `听潮日报｜${edition.headline.title_zh || edition.headline.title}`,
       html: dailyEmailHtml({
-        dateStr, words, top3, groups, total: posts.length,
+        dateStr, edition,
         unsubUrl: `${SITE}/api/subscribe/unsubscribe?token=${sub.token}`,
         dailyUrl: `${SITE}/daily`,
       }),
@@ -118,7 +97,7 @@ db.prepare(
 summaryLines.push(
   '## 日报邮件', '',
   `${failed && !sent ? '❌' : '✅'} ${dateStr}：内容 ${posts.length} 条（${windowH}h），订阅者 ${subscribers.length} 人，成功 ${sent} / 失败 ${failed}${retryEmails ? '（补发）' : ''}。`,
-  '', `热词：${words.map((w) => w.word || w).join('、') || '-'}`
+  '', `头条：${edition.headline.title_zh || edition.headline.title}`
 );
 flushSummary();
 if (failed && !sent) process.exit(1);

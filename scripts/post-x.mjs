@@ -1,12 +1,11 @@
-// X（Twitter）每日一推：取 24h 最受关注 Top1 发到 X
+// X（Twitter）每日一推：把当日日报的头条发到 X
 // 用法：node scripts/post-x.mjs（CI daily-digest.yml 调用）
 // 需要 4 个 secret（dev.twitter.com 免费开发者账号，Free 档 500 帖/月足够）：
 //   X_API_KEY / X_API_SECRET（App 的 Consumer Keys）
 //   X_ACCESS_TOKEN / X_ACCESS_SECRET（App 所属账号的 Access Token，需 Read+Write 权限）
 // 缺一即静默跳过（exit 0），不影响日报主流程
 import crypto from 'node:crypto';
-import db from '../lib/db.js';
-import { attachReactions } from '../lib/queries.js';
+import { loadLatestEdition } from '../lib/queries.js';
 
 const SITE = 'https://aikr.shddai.net';
 const REQUIRED = ['X_API_KEY', 'X_API_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_SECRET'];
@@ -16,29 +15,17 @@ if (missing.length) {
   process.exit(0);
 }
 
-// ---- 取今日最受关注 Top1（与日报同口径）----
-let rows = db.prepare(
-  `SELECT p.*, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-   FROM posts p WHERE p.created_at >= ? ORDER BY p.created_at DESC LIMIT 200`
-).all(new Date(Date.now() - 24 * 3600000).toISOString());
-if (!rows.length) {
-  rows = db.prepare(
-    `SELECT p.*, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-     FROM posts p WHERE p.created_at >= ? ORDER BY p.created_at DESC LIMIT 200`
-  ).all(new Date(Date.now() - 48 * 3600000).toISOString());
-}
-if (!rows.length) {
+// ---- 头条与日报同口径（lib/edition.js）----
+const top = loadLatestEdition().headline;
+if (!top) {
   console.log('X：48h 无内容，跳过');
   process.exit(0);
 }
-const posts = attachReactions(rows);
-const attention = (p) => (p.up - p.down) + Object.values(p.reactions || {}).reduce((a, b) => a + b, 0);
-const top = [...posts].sort((a, b) => attention(b) - attention(a))[0];
 
 // ---- 组推文（X 计宽：CJK 算 2，ASCII 算 1，上限 280）----
 const weight = (s) => [...s].reduce((w, ch) => w + (ch.codePointAt(0) > 0x2e7f ? 2 : 1), 0);
 const link = `${SITE}/post/${top.id}`;
-const head = '【今日 AI 一页】';
+const head = '【听潮日报】';
 const title = (top.title_zh || top.title).replace(/\s+/g, ' ').trim();
 const summary = (top.summary_zh || top.summary || '').replace(/\s+/g, ' ').trim();
 let text = `${head}${title}\n\n${summary}\n${link}`;

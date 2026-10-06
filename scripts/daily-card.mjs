@@ -1,20 +1,14 @@
-// 每日头条海报：取 24h 最受关注 Top1，渲染自包含报纸风海报 → public/daily-card.html
+// 每日头条海报：取当日日报的头条，渲染自包含报纸风海报 → public/daily-card.html
 // 由 daily-digest.yml 每日 08:00（北京）调用并提交
 import fs from 'node:fs';
 import QRCode from 'qrcode';
-import db from '../lib/db.js';
-import { attachReactions } from '../lib/queries.js';
+import { loadLatestEdition } from '../lib/queries.js';
 import { coverFor, coverInk } from '../lib/categories.js';
 
 const SITE = 'https://aikr.shddai.net';
 
-const rows = db.prepare(
-  `SELECT p.*, (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-   FROM posts p WHERE p.created_at >= ? ORDER BY p.created_at DESC LIMIT 200`
-).all(new Date(Date.now() - 24 * 3600000).toISOString());
-const posts = attachReactions(rows);
-const attention = (p) => (p.up - p.down) + Object.values(p.reactions || {}).reduce((a, b) => a + b, 0);
-const top = [...posts].sort((a, b) => attention(b) - attention(a))[0];
+// 头条与日报同口径（lib/edition.js）
+const top = loadLatestEdition().headline;
 
 if (!top) {
   console.log('24h 无内容，跳过海报生成');
@@ -81,14 +75,14 @@ const html = `<!DOCTYPE html>
       <h1>${esc(title)}</h1>
       ${top.title_zh ? `<p class="orig">${esc(top.title)}</p>` : ''}
       <p class="summary">${esc(top.summary_zh || top.summary)}</p>
-      <p class="meta">${esc(top.source)} · ${esc(top.category)} · ▲${top.up - top.down}</p>
+      <p class="meta">${esc(top.source)} · ${esc(top.category)} ${top.src_count > 1 ? ` · ${top.src_count} 家在报` : ''}</p>
     </div>
     <div class="foot">
       <img class="qr" src="${qr}" alt="二维码"/>
       <div class="foot-text"><b>扫码阅读原文</b><span>听潮 TideWire · aikr.shddai.net</span></div>
     </div>
   </div>
-  <p class="hint">长按或截图分享今日头条 · 更多见 <a style="color:#C23B22" href="${SITE}/daily">今日一页</a></p>
+  <p class="hint">长按或截图分享今日头条 · 更多见 <a style="color:#C23B22" href="${SITE}/daily">听潮日报</a></p>
 </div>
 </body></html>`;
 

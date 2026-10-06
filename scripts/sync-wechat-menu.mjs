@@ -40,4 +40,4 @@ if (menuResult.errcode !== 0) {
   throw new Error(`创建自定义菜单失败：${menuResult.errcode || 'UNKNOWN'} ${menuResult.errmsg || ''}`.trim());
 }
 
-console.log('微信菜单同步成功：今日日报 / 本周热榜 / AI快讯');
+console.log('微信菜单同步成功：今日日报 / 当前热点 / 最新精选');

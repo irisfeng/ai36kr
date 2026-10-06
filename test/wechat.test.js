@@ -50,10 +50,13 @@ test('parses flat WeChat XML without evaluating arbitrary XML entities', () => {
 });
 
 test('routes exact keywords and CLICK event keys to content intents', () => {
-  assert.equal(resolveWechatIntent(parseWechatMessage(textXml)), 'flashes');
+  assert.equal(resolveWechatIntent(parseWechatMessage(textXml)), 'picks');
   assert.equal(resolveWechatIntent({ msgType: 'text', content: '今日听潮' }), 'daily');
-  assert.equal(resolveWechatIntent({ msgType: 'text', content: 'AI 快讯' }), 'flashes');
-  assert.equal(resolveWechatIntent({ msgType: 'event', event: 'click', eventKey: 'WEEKLY' }), 'weekly');
+  assert.equal(resolveWechatIntent({ msgType: 'text', content: 'AI 快讯' }), 'picks');
+  assert.equal(resolveWechatIntent({ msgType: 'text', content: '热点' }), 'hot');
+  // 旧菜单的 key 在菜单重新同步前继续可用
+  assert.equal(resolveWechatIntent({ msgType: 'event', event: 'click', eventKey: 'WEEKLY' }), 'hot');
+  assert.equal(resolveWechatIntent({ msgType: 'event', event: 'click', eventKey: 'FLASHES' }), 'picks');
   assert.equal(resolveWechatIntent({ msgType: 'text', content: '日报怎么做' }), null);
 });
 
@@ -61,8 +64,8 @@ test('publishes three direct menu actions using the supported CLICK event keys',
   assert.deepEqual(WECHAT_MENU, {
     button: [
       { type: 'click', name: '今日日报', key: 'DAILY' },
-      { type: 'click', name: '本周热榜', key: 'WEEKLY' },
-      { type: 'click', name: 'AI快讯', key: 'FLASHES' },
+      { type: 'click', name: '当前热点', key: 'HOT' },
+      { type: 'click', name: '最新精选', key: 'PICKS' },
     ],
   });
   for (const button of WECHAT_MENU.button) {
@@ -72,7 +75,7 @@ test('publishes three direct menu actions using the supported CLICK event keys',
 
 test('subscribe gets the welcome reply and unknown text gets help', () => {
   assert.match(classifyWechatMessage({ msgType: 'event', event: 'subscribe' }).text, /回复「日报」/);
-  assert.match(classifyWechatMessage({ msgType: 'text', content: '你好' }).text, /「日报」「周榜」「快讯」/);
+  assert.match(classifyWechatMessage({ msgType: 'text', content: '你好' }).text, /「日报」「热点」「精选」/);
 });
 
 test('builds a dynamic daily card with tracked direct link', () => {
@@ -82,7 +85,7 @@ test('builds a dynamic daily card with tracked direct link', () => {
       { title: '第二个重要变化' },
     ],
   }, 'https://aikr.shddai.net/path-is-ignored');
-  assert.equal(card.title, '今日听潮｜2 条 AI 信号已更新');
+  assert.equal(card.title, '今日听潮｜2 条值得看的 AI 新闻');
   assert.match(card.description, /第一个重要变化；第二个重要变化/);
   assert.equal(new URL(card.url).pathname, '/daily');
   assert.equal(new URL(card.url).searchParams.get('utm_source'), 'wechat');

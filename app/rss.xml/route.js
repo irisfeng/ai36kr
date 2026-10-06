@@ -1,5 +1,5 @@
-// 本站 RSS 输出：让 Feedly/Inoreader/Folo 等订阅器反过来订阅听潮
-import { listPosts } from '@/lib/queries';
+// 本站 RSS 输出：默认是精选（一件事一条）；/rss.xml?feed=all 是全部动态
+import { listPicks, listPosts } from '@/lib/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,19 +11,20 @@ function esc(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
 
-export async function GET() {
-  const posts = listPosts({ sort: 'new', limit: 50 });
+export async function GET(request) {
+  const all = new URL(request.url).searchParams.get('feed') === 'all';
+  const posts = all ? listPosts({ sort: 'all', limit: 50 }) : listPicks(50);
   const items = posts
     .map((p) => {
       const link = `${SITE}/post/${p.id}`;
       return `  <item>
-    <title>${esc(p.title)}</title>
+    <title>${esc(p.title_zh || p.title)}</title>
     <link>${link}</link>
     <guid isPermaLink="true">${link}</guid>
     <pubDate>${new Date(p.created_at).toUTCString()}</pubDate>
     <source url="${esc(p.source_home || '')}">${esc(p.source)}</source>
     <category>${esc(p.category)}</category>
-    <description>${esc(p.summary)}</description>
+    <description>${esc(p.summary_zh || p.summary)}</description>
   </item>`;
     })
     .join('\n');
@@ -31,9 +32,9 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
 <channel>
-  <title>听潮 TideWire - AI 行业新闻聚合与社区</title>
+  <title>听潮 TideWire - ${all ? '全部动态' : '精选'}</title>
   <link>${SITE}</link>
-  <description>聚合 37 个真实信息源，每 30 分钟更新。AI 新闻、快讯、新品、深度长读。</description>
+  <description>值得看的 AI 新闻，一件事只说一次。</description>
   <language>zh-CN</language>
   <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items}
