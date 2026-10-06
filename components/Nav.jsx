@@ -7,12 +7,10 @@ import SubscribeEntry from './SubscribeEntry';
 import { beijingNow } from '@/lib/time';
 
 const LINKS = [
-  { href: '/', label: '首页' },
-  { href: '/daily', label: '今日' },
-  { href: '/weekly', label: '周榜' },
-  { href: '/flashes', label: '快讯' },
-  { href: '/launch', label: '新品榜' },
-  { href: '/submit', label: '投稿' },
+  { href: '/', label: '精选' },
+  { href: '/hot', label: '热点' },
+  { href: '/daily', label: '日报' },
+  { href: '/all', label: '全部' },
 ];
 
 export default function Nav() {
@@ -23,13 +21,13 @@ export default function Nav() {
   function onSearch(e) {
     e.preventDefault();
     const kw = q.trim();
-    if (kw) router.push(`/?q=${encodeURIComponent(kw)}`);
-    else router.push('/');
+    router.push(kw ? `/all?q=${encodeURIComponent(kw)}` : '/all');
   }
 
   // 刊头日期固定 UTC+8（与全站时间显示统一，不随浏览器/服务器时区漂移）
   const bj = beijingNow();
   const today = `${bj.getUTCFullYear()}年${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日 星期${'日一二三四五六'[bj.getUTCDay()]}`;
+  const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
     <header className="nav">
@@ -40,11 +38,12 @@ export default function Nav() {
         <div className="masthead-right">
           <span className="masthead-date" suppressHydrationWarning>{today}</span>
           <SubscribeEntry />
-          <form className="nav-search" onSubmit={onSearch}>
-            <span className="search-icon">⌕</span>
+          <form className="nav-search" onSubmit={onSearch} role="search">
+            <span className="search-icon" aria-hidden="true">⌕</span>
             <input
               type="search"
-              placeholder="搜索标题 / 摘要…"
+              aria-label="搜索"
+              placeholder="搜索…"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
@@ -55,7 +54,7 @@ export default function Nav() {
         <div className="container nav-inner">
           <nav className="nav-links">
             {LINKS.map((l) => (
-              <Link key={l.href} href={l.href} className={pathname === l.href ? 'active' : ''}>
+              <Link key={l.href} href={l.href} className={isActive(l.href) ? 'active' : ''}>
                 {l.label}
               </Link>
             ))}

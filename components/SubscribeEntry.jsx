@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import SubscribeForm from './SubscribeForm';
 
@@ -11,6 +11,13 @@ const RSS_URL = 'https://aikr.shddai.net/rss.xml';
 export default function SubscribeEntry() {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
 
   async function copyRss() {
     try {
@@ -24,19 +31,19 @@ export default function SubscribeEntry() {
 
   const modal = open ? (
     <div className="modal-mask" onClick={() => setOpen(false)}>
-      <div className="modal subscribe-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal subscribe-modal" role="dialog" aria-modal="true" aria-label="订阅听潮" onClick={(e) => e.stopPropagation()}>
         <div className="sm-head">
           <span className="sm-seal">听</span>
           <div>
             <b>订阅听潮</b>
             <p>每日 8 点，一页看懂 AI 圈</p>
           </div>
-          <button type="button" className="sharecard-close" onClick={() => setOpen(false)}>×</button>
+          <button type="button" className="sharecard-close" aria-label="关闭" onClick={() => setOpen(false)}>×</button>
         </div>
         <div className="sm-row">
           <div className="sm-row-title"><span className="sm-mark" />邮箱日报</div>
           <SubscribeForm />
-          <p className="sm-note">热词 + 最受关注 Top3 + 分类收录，填邮箱即订阅，随时一键退订</p>
+          <p className="sm-note">头条、看点和当天值得知道的事，填邮箱即订阅，随时一键退订</p>
         </div>
         <div className="sm-row">
           <div className="sm-row-title"><span className="sm-mark" />RSS</div>

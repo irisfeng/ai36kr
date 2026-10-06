@@ -1,20 +1,24 @@
 # 听潮 TideWire
 
-> 中文 AI 行业新闻聚合与社区。每 30 分钟聚合 37 个中英文权威信息源（中文科技媒体、英文科技媒体、OpenAI / Google DeepMind / Google Research / Hugging Face 等官方博客、Import AI / Interconnects 等深度专栏），英文内容由 LLM 自动译为中文。每日 08:00（北京时间）发布「今日 AI 一页」并推送邮件日报。
+> 中文 AI 资讯精选站。每 30 分钟从 33 个中英文信源（OpenAI / Google DeepMind / Hugging Face 等官方博客，Simon Willison / Import AI / Latent Space 等从业者专栏，TechCrunch / The Verge / 36氪 / Hacker News 等媒体与社区）抓取，筛掉行情、活动推广和多事合集，把不同信源报道的同一件事并成一个事件，再按公开的标准评分选出值得看的。英文内容译为中文，摘要第一句直接回答「谁做了什么」。每日 08:00（北京时间）出日报。
 
-## 核心页面
+## 页面
 
-- [首页](https://aikr.shddai.net/)：文章流（热度 / 最新 / 深度长读）+ 快讯 + 周热榜 + 新品榜
-- [今日一页](https://aikr.shddai.net/daily)：今日 AI 热词、最受关注 Top3、按分类分组的全部收录
-- [日报归档](https://aikr.shddai.net/daily/2026-07-31)：按北京日历日的永久存档页（替换日期可回看任意一天）
-- [快讯](https://aikr.shddai.net/flashes)：7×24 快讯时间线，自动打标 发布/融资/政策/数据/人事
-- [新品榜](https://aikr.shddai.net/launch)：AI 新品今日 / 本周榜单（Product Hunt 数据）
-- [RSS](https://aikr.shddai.net/rss.xml)：全站 RSS 订阅
+- [精选](https://aikr.shddai.net/)：过了入选门槛的事件，一件事一条，按天分组
+- [热点](https://aikr.shddai.net/hot)：按事件算热度，48 小时内每个独立信源只计一次，24 小时减半
+- [日报](https://aikr.shddai.net/daily)：头条、看点、分类要闻、简讯；归档在 /daily/YYYY-MM-DD（北京日历日）
+- [全部动态](https://aikr.shddai.net/all)：抓到的每一条，不筛不并；`?q=` 搜索，`?cat=` 按分类
+
+## 给程序用
+
+- [RSS · 精选](https://aikr.shddai.net/rss.xml)，[RSS · 全部](https://aikr.shddai.net/rss.xml?feed=all)
+- JSON：`GET https://aikr.shddai.net/api/posts?sort=pick|hot|all&cat=&q=&since=24h&limit=50&offset=0`
+  - 每条含 `title`（原题）、`title_zh`、`summary_zh`、`source`、`tier`（T1 官方一手 / T1_5 从业者专栏 / T2 媒体）、`url`（原文）、`score`（编辑评分 0–100，可能为空）、`src_count`（报道这件事的独立信源数）、`coverage`（同一事件的其他报道）
+- 单条：`GET https://aikr.shddai.net/api/posts/{id}`
 
 ## 事实信息
 
-- 站点语言：中文（英文内容由 LLM 语境翻译为中文，术语经过校正）
-- 内容更新频率：每 30 分钟
-- 内容性质：新闻聚合与策展（每篇附原始来源链接），社区互动（投票 / 评论 / 表情反应）
-- 邮件日报：每日 08:00（北京时间），页内表单订阅，一键退订
+- 站点语言：中文
+- 内容性质：新闻聚合与编辑筛选，每条附原始来源链接；摘要由模型依据 RSS 摘要改写，不代表原文全文
+- 评分标准与入选门槛公开在代码仓库：prompts/editor.js、lib/editorial.js
 - 站点地址：https://aikr.shddai.net

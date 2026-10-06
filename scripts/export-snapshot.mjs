@@ -4,16 +4,14 @@ import path from 'node:path';
 import fs from 'node:fs';
 import db from '../lib/db.js';
 
-const LIMITS = { posts: 600, flashes: 300, products: 100, source_status: 100 };
+const LIMITS = { posts: 600, source_status: 100 };
 const COLS = {
-  posts: 'id, title, title_norm, title_zh, summary_zh, ext_score, source, category, summary, content, is_deep, up, down, created_at, url, is_external, source_home, image_url',
-  flashes: 'id, content, tag, up, created_at, url, source',
-  products: 'id, name, tagline, description, category, up, created_at, url, image_url',
+  posts: 'id, title, title_norm, title_zh, summary_zh, ext_score, source, category, summary, content, is_deep, up, down, created_at, url, is_external, source_home, image_url, tier, score, noise, event_id, rep, selected, src_count, hot_score',
   // 源健康状态随快照走：CI 每轮水合后 fail_streak 跨轮累计，连续失败告警才能生效
   source_status: 'name, home, url, ok, last_fetch, item_count, error, fail_streak',
 };
 
-const snapshot = { exportedAt: new Date().toISOString(), version: 1 };
+const snapshot = { exportedAt: new Date().toISOString(), version: 2 };
 for (const [table, cols] of Object.entries(COLS)) {
   const order = table === 'source_status' ? 'name' : 'created_at DESC';
   snapshot[table] = db
@@ -29,12 +27,12 @@ try {
   const prev = JSON.parse(fs.readFileSync(out, 'utf8'));
   const strip = ({ exportedAt, ...rest }) => rest;
   if (JSON.stringify(strip(prev)) === JSON.stringify(strip(snapshot))) {
-    console.log(`快照内容无实质变化，保留原文件（posts ${snapshot.posts.length} / flashes ${snapshot.flashes.length} / products ${snapshot.products.length}）`);
+    console.log(`快照内容无实质变化，保留原文件（posts ${snapshot.posts.length}）`);
     process.exit(0);
   }
 } catch { /* 首次导出或文件损坏：正常写入 */ }
 fs.writeFileSync(out, JSON.stringify(snapshot));
 const kb = Math.round(fs.statSync(out).size / 1024);
 console.log(
-  `快照已导出：posts ${snapshot.posts.length} / flashes ${snapshot.flashes.length} / products ${snapshot.products.length}（${kb} KB）`
+  `快照已导出：posts ${snapshot.posts.length}（${kb} KB）`
 );

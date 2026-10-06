@@ -20,12 +20,13 @@ if (process.env.GITHUB_STEP_SUMMARY) {
     let snapStats = '导出失败';
     try {
       const snap = JSON.parse(fs.readFileSync('data/snapshot.json', 'utf8'));
-      snapStats = `posts ${snap.posts?.length ?? 0} / flashes ${snap.flashes?.length ?? 0} / products ${snap.products?.length ?? 0}`;
+      snapStats = `posts ${snap.posts?.length ?? 0}`;
     } catch { /* 导出失败时保持默认文案 */ }
     const lines = [
       '## 定时聚合',
       '',
       `- 新增入库：**${result?.totalNew ?? 0}** 条；源在线：**${result?.okCount ?? 0}**${result?.dbErrors ? `；⚠️ DB 写失败：**${result.dbErrors}**` : ''}`,
+      `- 近 10 天：**${result?.events ?? '-'}** 个事件，精选 **${result?.selected ?? '-'}**，噪声 ${result?.noise ?? '-'}`,
       `- 快照：${snapStats}`,
       `- 失败源（${failed.length}）：${failed.length ? failed.map((s) => `${s.name}（${(s.error || '未知').slice(0, 60)}）`).join('、') : '无'}`,
     ];

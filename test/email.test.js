@@ -14,18 +14,16 @@ test('welcome email escapes URL text and attribute contexts', () => {
 });
 
 test('daily email escapes all externally sourced text', () => {
+  const item = { id: 1, title: PAYLOAD, summary: `${PAYLOAD} summary`, source: PAYLOAD, src_count: 2 };
   const html = dailyEmailHtml({
     dateStr: PAYLOAD,
-    words: [{ word: PAYLOAD, count: 1 }],
-    top3: [{
-      id: 1,
-      title: PAYLOAD,
-      source: PAYLOAD,
-      up: 0,
-      down: 0,
-    }],
-    groups: [[PAYLOAD, [{ id: 1, title: PAYLOAD }]]],
-    total: 1,
+    edition: {
+      headline: item,
+      highlights: [item],
+      sections: [[PAYLOAD, [item]]],
+      briefs: [item],
+      total: 1,
+    },
     unsubUrl: 'https://example.test/unsubscribe?token=" onmouseover="alert(1)',
     dailyUrl: 'https://example.test/daily?x=" onmouseover="alert(1)',
   });
