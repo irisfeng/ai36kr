@@ -55,6 +55,12 @@ test('post queries apply stable SQL ordering before limit and offset', async () 
     // 只有零星一两件事、又没有精选的日子不算一期日报；有精选的日子不看件数
     assert.deepEqual(editionDays(2), ['2026-07-26']);
     assert.deepEqual(editionDays(), ['2026-07-26']);
+
+    // 按时间筛的查询要走 created_at 索引，不能整表扫（Turso 按扫过的行数计费）
+    const plan = (sql) => db.prepare(`EXPLAIN QUERY PLAN ${sql}`).all().map((r) => r.detail).join(' ; ');
+    assert.match(plan("SELECT id, title FROM posts WHERE created_at >= '2026-07-20' ORDER BY created_at"), /SEARCH posts USING INDEX idx_posts_created/);
+    assert.match(plan('SELECT id, title FROM posts ORDER BY created_at DESC, id DESC LIMIT 100'), /USING INDEX idx_posts_created/);
+    assert.doesNotMatch(plan('SELECT id, title FROM posts ORDER BY created_at DESC, id DESC LIMIT 100'), /TEMP B-TREE/);
   } finally {
     db?.close?.();
     process.chdir(originalCwd);
