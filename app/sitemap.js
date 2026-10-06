@@ -9,9 +9,10 @@ import { editionDays } from '@/lib/queries';
 const SITE = 'https://aikr.shddai.net';
 
 export default function sitemap() {
-  // 只收代表稿、不收噪声：同一事件的其他报道与行情 / 推广条目不值得单独被索引
+  // 只收代表稿、不收噪声：同一事件的其他报道与行情 / 推广条目不值得单独被索引。
+  // 入选过的事件不随保留期清理，所以上限放宽到能装下几年的精选
   const posts = db
-    .prepare("SELECT id, created_at, selected FROM posts WHERE rep = 1 AND COALESCE(noise, '') = '' ORDER BY created_at DESC LIMIT 500")
+    .prepare("SELECT id, created_at, selected FROM posts WHERE rep = 1 AND COALESCE(noise, '') = '' ORDER BY created_at DESC LIMIT 5000")
     .all();
   const staticPages = ['', '/hot', '/daily', '/all'].map((p) => ({
     url: `${SITE}${p}`,
