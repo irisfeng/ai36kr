@@ -52,9 +52,9 @@ test('post queries apply stable SQL ordering before limit and offset', async () 
       UPDATE posts SET event_id = id, rep = 1, noise = '行情' WHERE id = 5;
     `);
     assert.deepEqual(editionDays(1), ['2026-07-26', '2026-07-25']);
-    // 只有零星一两件事的日子不算一期日报
+    // 只有零星一两件事、又没有精选的日子不算一期日报；有精选的日子不看件数
     assert.deepEqual(editionDays(2), ['2026-07-26']);
-    assert.deepEqual(editionDays(), []);
+    assert.deepEqual(editionDays(), ['2026-07-26']);
   } finally {
     db?.close?.();
     process.chdir(originalCwd);

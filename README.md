@@ -79,7 +79,7 @@ npm run build && npm start
 
 Anthropic、Meta AI、The Batch 没有可用的 RSS，暂缺；机器之心反爬。HN 的分数入库为 `ext_score`，计入热度和估分。
 
-**持续更新（三层）**：① GitHub Actions 每 30 分钟聚合全部源，直写 Turso 远端库，并把内容快照提交到 `snapshot` 分支；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 `source_status` 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。失败源指数退避，连续 3 轮失败自动开 GitHub Issue（`REPO_ALERT_TOKEN`）。聚合条目留 30 天，长文源留 90 天。
+**持续更新（三层）**：① GitHub Actions 每 30 分钟聚合全部源，直写 Turso 远端库，并把内容快照提交到 `snapshot` 分支；② 运行实例每 10 分钟增量补抓（`refreshIfStale`，以 `source_status` 表的抓取时间为准，多实例不重复刷）；③ Vercel Cron 每日兜底。失败源指数退避，连续 3 轮失败自动开 GitHub Issue（`REPO_ALERT_TOKEN`）。没入选的条目留 30 天（长文源 90 天）；入选过的事件连同它的其他报道一直保留，文章页和日报归档的链接不会失效。
 
 **翻译词表**：译前保护词 / 译后校正词存于 `glossary` 表，`node scripts/add-term.mjs <protect|fix> <词条|正则> [替换为] [--remote]` 热更新；每轮聚合自动回扫近 30 天译文。
 
