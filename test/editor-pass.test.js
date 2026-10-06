@@ -41,6 +41,10 @@ test('editor pass stores score, Chinese title and summary; failures are retried 
     };
 
     const { editPosts } = await import('../lib/editor.js');
+    // 时间预算用完：一批都不送，也不记失败，留给下一轮
+    assert.deepEqual(await editPosts(db, 30, { budgetMs: 0 }), { edited: 0, failed: 0 });
+    assert.equal(calls.length, 0);
+    assert.equal(db.prepare('SELECT score_tries FROM posts WHERE id = 4').get().score_tries, 0);
     assert.deepEqual(await editPosts(db, 30), { edited: 2, failed: 1 });
 
     const row = (id) => db.prepare('SELECT score, title_zh, summary_zh, score_tries FROM posts WHERE id = ?').get(id);
