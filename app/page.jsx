@@ -77,7 +77,7 @@ export default async function HomePage() {
         <section className="side-card">
           <h3 className="side-title">怎么选的</h3>
           <p className="side-note">
-            {health.total} 个信源，每 30 分钟抓一轮。行情、活动推广、多事合集先筛掉；
+            {health.total} 个信源，每隔几小时抓一轮。行情、活动推广、多事合集先筛掉；
             同一件事的多家报道并成一条；剩下的按公开的标准评分，官方一手门槛低、媒体门槛高。
           </p>
           <p className="side-status" suppressHydrationWarning>
