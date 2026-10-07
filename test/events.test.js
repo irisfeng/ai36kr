@@ -102,6 +102,51 @@ test('a long title and a short one about the same release merge across sources w
     '大模型新品Gemini 4 Argon正式亮相', 'Gemini 3.8 TTS 游乐场'].map((t) => byTitle.get(t))).size, 4);
 });
 
+test('a report that recognises two events merges them when all three agree on the entities', () => {
+  // 线上 10 月 6 日的顺序：Hacker News 先后两个帖子（同信源，互相并不上），然后 TechCrunch，最后 Simon Willison。
+  // 两个帖子各立一个事件，后两篇一边挂一家，日报里 Mistral 出现了两次
+  const titles = [
+    ['Mistral 发布新一代旗舰大模型 Mistral Large 4', 'Hacker News'],
+    ['Mistral Large 4：代号「Le Chonk」', 'Hacker News'],
+    ['Mistral发布1T参数新模型Mistral Large 4，瞄准超越中外竞品', 'TechCrunch'],
+    ['Mistral 发布 Mistral Large 4 预览版', 'Simon Willison'],
+  ];
+  const { posts, eventOf, byTitle } = cluster(titles, wide);
+  const first = posts.find((p) => p.title === titles[0][0]);
+  // 四篇归到一个事件，事件 id 仍是最早那篇的
+  for (const [t] of titles) assert.equal(byTitle.get(t), first.id, t);
+  // 可重复执行、与输入顺序无关
+  assert.deepEqual([...assignEvents([...posts].reverse())].sort(), [...eventOf].sort());
+
+  // 已冻结的事件不再合并：新稿只是挂到最像的那一个上
+  const day = 86400000;
+  const old = (title, source, id, hours) => ({ ...post(title, source, hours), id, event_id: id });
+  const frozen = [old(titles[0][0], 'Hacker News', 9001, 0), old(titles[1][0], 'Hacker News', 9002, 1)];
+  const late = { ...post(titles[3][0], 'Simon Willison', 30), id: 9003 };
+  const kept = assignEvents([...posts.filter((p) => !titles.some(([t]) => t === p.title)), ...frozen, late], { frozenBefore: T0 + day });
+  assert.deepEqual([kept.get(9001), kept.get(9002)], [9001, 9002]);
+  assert.ok([9001, 9002].includes(kept.get(9003)));
+});
+
+test('a report about one of two things does not merge them', () => {
+  const { byTitle } = cluster([
+    // 同一天、同一家发的两个 Gemini 3.8 产品；第三方只写了其中一个
+    ['Gemini 3.8 文字转语音说你好', 'Google DeepMind'],
+    ['隆重推出 Gemini 3.8 Live with Live Avatar', 'Google DeepMind'],
+    ['Gemini 3.8 TTS 游乐场', 'Simon Willison'],
+    // 两家各自的发布，和一篇把它们放在一起说的综述
+    ['GPT-6 Sol 和 Luna 简介', 'OpenAI'],
+    ['GPT-6 Sol和Luna上线，打折比梁文锋还狠', '钛媒体'],
+    ['Claude Opus 5.5突袭！68万行代码一天迁完，API价格打8折', '量子位'],
+    ['Claude Opus 5.5 发布：一天内迁移 68 万行代码，单任务成本比 GPT-6 Astra 便宜 80%', 'InfoQ'],
+    ['Claude Opus 5.5、GPT-6 Sol、GPT-6 Luna 以及新的价格战', 'Simon Willison'],
+  ], wide);
+  const apart = (a, b) => assert.notEqual(byTitle.get(a), byTitle.get(b), `${a} / ${b}`);
+  apart('Gemini 3.8 文字转语音说你好', '隆重推出 Gemini 3.8 Live with Live Avatar');
+  apart('GPT-6 Sol 和 Luna 简介', 'Claude Opus 5.5突袭！68万行代码一天迁完，API价格打8折');
+  apart('GPT-6 Sol和Luna上线，打折比梁文锋还狠', 'Claude Opus 5.5 发布：一天内迁移 68 万行代码，单任务成本比 GPT-6 Astra 便宜 80%');
+});
+
 test('sharing entities is not enough: buzzword versions, sibling products and same-outlet series stay apart', () => {
   const { byTitle } = cluster([
     // 「2.0」在后一条里修饰的是「智能体」，不是 Manus
