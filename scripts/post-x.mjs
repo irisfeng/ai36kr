@@ -24,7 +24,7 @@ if (!top) {
 
 // ---- 组推文（X 计宽：CJK 算 2，ASCII 算 1，上限 280）----
 const weight = (s) => [...s].reduce((w, ch) => w + (ch.codePointAt(0) > 0x2e7f ? 2 : 1), 0);
-const link = `${SITE}/post/${top.id}`;
+const link = `${SITE}/post/${top.id}?utm_source=x`;
 const head = '【听潮日报】';
 const title = (top.title_zh || top.title).replace(/\s+/g, ' ').trim();
 const summary = (top.summary_zh || top.summary || '').replace(/\s+/g, ' ').trim();

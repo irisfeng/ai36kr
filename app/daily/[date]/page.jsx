@@ -1,19 +1,12 @@
 import { notFound } from 'next/navigation';
 import DailyView from '@/components/DailyView';
 import { editionDays, loadEdition } from '@/lib/queries';
-import { alternates } from '@/lib/seo';
-import { beijingDateKey } from '@/lib/time';
+import { alternates, dailyShareMeta } from '@/lib/seo';
+import { beijingDateKey, beijingDayRange } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function dayRange(date) {
-  // 按北京时间取日历日
-  const start = new Date(`${date}T00:00:00+08:00`);
-  const end = new Date(start.getTime() + 86400000);
-  return { start: start.toISOString(), end: end.toISOString() };
-}
 
 function fmt(date) {
   const [y, m, d] = date.split('-');
@@ -27,11 +20,9 @@ function isValidDate(date) {
 export async function generateMetadata({ params }) {
   const { date } = await params;
   if (!isValidDate(date)) return { title: '日报' };
-  return {
-    title: `${fmt(date)} AI 日报`,
-    description: `${fmt(date)} AI 圈值得知道的事：头条、看点与分类要闻。`,
-    alternates: alternates(`/daily/${date}`),
-  };
+  const title = `${fmt(date)} AI 日报`;
+  const description = `${fmt(date)} AI 圈值得知道的事：头条、看点与分类要闻。`;
+  return { title, description, alternates: alternates(`/daily/${date}`), ...dailyShareMeta({ date, title, description }) };
 }
 
 export default async function DailyArchivePage({ params }) {
@@ -43,7 +34,7 @@ export default async function DailyArchivePage({ params }) {
   const days = editionDays();
   if (!days.includes(date) && date !== beijingDateKey(new Date().toISOString())) notFound();
 
-  const edition = loadEdition(dayRange(date));
+  const edition = loadEdition(beijingDayRange(date));
   // days 是新到旧：前一天取第一个更早的，后一天取最后一个更晚的
   const prev = days.find((d) => d < date);
   const next = days.findLast((d) => d > date);

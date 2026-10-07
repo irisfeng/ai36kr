@@ -19,7 +19,7 @@ const title = top.title_zh || top.title;
 const postUrl = `${SITE}/post/${top.id}`;
 const date = new Date(Date.now() + 8 * 3600000);
 const dateStr = `${date.getUTCFullYear()} 年 ${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;
-const qr = await QRCode.toDataURL(postUrl, { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });
+const qr = await QRCode.toDataURL(`${postUrl}?utm_source=daily_card&utm_medium=qr`, { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });
 const esc = (s = '') => String(s)
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')

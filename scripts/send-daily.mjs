@@ -77,7 +77,7 @@ for (const sub of targets) {
       html: dailyEmailHtml({
         dateStr, edition,
         unsubUrl: `${SITE}/api/subscribe/unsubscribe?token=${sub.token}`,
-        dailyUrl: `${SITE}/daily`,
+        dailyUrl: `${SITE}/daily?utm_source=email&utm_medium=daily`,
       }),
     });
     sent++;

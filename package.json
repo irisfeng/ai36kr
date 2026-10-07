@@ -13,6 +13,7 @@
     "wechat:menu:sync": "node scripts/sync-wechat-menu.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "libsql": "^0.5.29",
     "next": "16.2.12",
     "qrcode": "^1.5.4",
