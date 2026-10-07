@@ -1,6 +1,6 @@
 # 听潮 TideWire
 
-> 中文 AI 资讯精选站。每 30 分钟从 33 个中英文信源（OpenAI / Google DeepMind / Hugging Face 等官方博客，Simon Willison / Import AI / Latent Space 等从业者专栏，TechCrunch / The Verge / 36氪 / Hacker News 等媒体与社区）抓取，筛掉行情、活动推广和多事合集，把不同信源报道的同一件事并成一个事件，再按公开的标准评分选出值得看的。英文内容译为中文，摘要第一句直接回答「谁做了什么」。每日 08:00（北京时间）出日报。
+> 中文 AI 资讯精选站。每隔几小时从 33 个中英文信源（OpenAI / Google DeepMind / Hugging Face 等官方博客，Simon Willison / Import AI / Latent Space 等从业者专栏，TechCrunch / The Verge / 36氪 / Hacker News 等媒体与社区）抓取，筛掉行情、活动推广和多事合集，把不同信源报道的同一件事并成一个事件，再按公开的标准评分选出值得看的。英文内容译为中文，摘要第一句直接回答「谁做了什么」。每日 08:00（北京时间）出日报。
 
 ## 页面
 
