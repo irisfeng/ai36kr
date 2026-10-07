@@ -11,10 +11,20 @@ test('noise prefilter blocks market tickers, event promos and roundups only', ()
   assert.equal(detectNoise('当 Vibe Coding 撞上企业级现实｜QCon上海'), '活动');
   assert.equal(detectNoise('早报｜曝苹果新CEO想更快发产品/华为Mate 90真机进店'), '合集');
   assert.equal(detectNoise('The Download: AI adoption paradox'), '合集');
+  // 线上漏掉过的合集写法（它们会和里面提到的单条新闻错并成一个事件）
+  assert.equal(detectNoise('【数智周报】智谱AI道歉；Anthropic被曝选定纳斯达克上市，目标10月IPO；OpenAI据悉考虑新一轮融资'), '合集');
+  assert.equal(detectNoise('【钛晨报】“十五五”民政工作怎么干？四大重点任务，养老排在第一位；马斯克预测未来世界'), '合集');
+  assert.equal(detectNoise('8点1氪丨“西贝将彻底倒闭”冲上热搜，最新回应；原钉钉CEO无招履新，年薪10万；黄仁勋出售约4.6万股英伟达股票'), '合集');
+  assert.equal(detectNoise('Edge AI Daily 早报（10月3日）'), '合集');
+  assert.equal(detectNoise('2026年10月3日 Hacker News 热门头条'), '合集');
+  assert.equal(detectNoise('2026-10-04 Hacker News 热门内容汇总'), '合集');
   assert.equal(detectNoise('某大会观察', '现在注册最高可省100美元，第二张门票半价'), '推广');
   // 正常新闻里出现「指数」「大会」「上涨」不算噪声
   assert.equal(detectNoise('OpenAI 在开发者大会上发布 GPT-6.1 Sol'), '');
   assert.equal(detectNoise('Anthropic与Akamai达成116亿美元的AI算力协议'), '');
+  // 标题里带 Hacker News 的单条讨论不是合集
+  assert.equal(detectNoise('Hacker News热议：Oracle触发AI泡沫破裂'), '');
+  assert.equal(detectNoise('为Hacker News已达成的AI相关挑战投票'), '');
   assert.equal(detectNoise('斯坦福 AI 指数报告：模型成本一年下降 90%'), '');
 });
 
