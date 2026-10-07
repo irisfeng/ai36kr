@@ -1,4 +1,5 @@
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import Nav from '@/components/Nav';
 
 export const metadata = {
@@ -79,6 +80,8 @@ export default function RootLayout({ children }) {
             <span className="f-copy">© 2026 听潮 TideWire</span>
           </div>
         </footer>
+        {/* 访问统计：不用 cookie；只在 Vercel 上生效，要在项目的 Analytics 页里开启 */}
+        <Analytics />
       </body>
     </html>
   );

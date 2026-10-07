@@ -1,16 +1,18 @@
 import DailyView from '@/components/DailyView';
 import { editionDays, loadLatestEdition } from '@/lib/queries';
-import { alternates } from '@/lib/seo';
+import { alternates, dailyShareMeta } from '@/lib/seo';
 import { beijingDateKey, dateGroup } from '@/lib/time';
 
 // 本页不读 searchParams，revalidate 会让构建期用空库预渲染并服役空页 → 必须动态
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: '日报',
-  description: '今天 AI 圈值得知道的事：一条头条、三条看点，其余按分类排好。一件事只说一次。',
-  alternates: alternates('/daily'),
-};
+export function generateMetadata() {
+  const title = '日报';
+  const description = '今天 AI 圈值得知道的事：一条头条、三条看点，其余按分类排好。一件事只说一次。';
+  // 预览图的地址带上当天日期：各平台按地址缓存图片，每天换一个地址才会换图
+  const date = beijingDateKey(new Date().toISOString());
+  return { title, description, alternates: alternates('/daily'), ...dailyShareMeta({ date, title: `听潮日报 · ${dateGroup(new Date().toISOString())}`, description }) };
+}
 
 export default function DailyPage() {
   const edition = loadLatestEdition();

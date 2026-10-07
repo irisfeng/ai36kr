@@ -1,5 +1,6 @@
 // 本站 RSS 输出：默认是精选（一件事一条）；/rss.xml?feed=all 是全部动态
 import { listPicks, listPosts } from '@/lib/queries';
+import { tracked } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,7 @@ export async function GET(request) {
       const link = `${SITE}/post/${p.id}`;
       return `  <item>
     <title>${esc(p.title_zh || p.title)}</title>
-    <link>${link}</link>
+    <link>${esc(tracked(link, 'rss'))}</link>
     <guid isPermaLink="true">${link}</guid>
     <pubDate>${new Date(p.created_at).toUTCString()}</pubDate>
     <source url="${esc(p.source_home || '')}">${esc(p.source)}</source>

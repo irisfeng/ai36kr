@@ -5,6 +5,7 @@ import db from '@/lib/db';
 import { tideCoverSvg } from '@/lib/tide-cover';
 import { fetchPublicImage } from '@/lib/safe-image';
 import { dateGroup } from '@/lib/time';
+import { tracked } from '@/lib/seo';
 import { consumeRequestRateLimit } from '@/lib/rate-limit';
 import { rateLimitExceeded } from '@/lib/write-response';
 
@@ -81,7 +82,7 @@ export async function GET(request, ctx) {
   const title = post.title_zh || post.title;
   const summary = post.summary_zh || post.summary || '';
   const dateStr = dateGroup(post.created_at); // 海报日期统一 UTC+8
-  const qr = await QRCode.toDataURL(`${SITE}/post/${post.id}`, { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });
+  const qr = await QRCode.toDataURL(tracked(`${SITE}/post/${post.id}`, 'sharecard', 'qr'), { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });
 
   const coverW = W - PAD * 2, coverH = Math.round(coverW * 9 / 21);
   // 折行预留 6% 安全边（不同平台字体宽度有差异），文字区加裁剪防溢出
