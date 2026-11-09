@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useTrackInternalNav } from './BackLink';
 import SubscribeEntry from './SubscribeEntry';
 import { beijingNow } from '@/lib/time';
 
@@ -28,6 +29,7 @@ export default function Nav() {
   const bj = beijingNow();
   const today = `${bj.getUTCFullYear()}年${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日 星期${'日一二三四五六'[bj.getUTCDay()]}`;
   const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+  useTrackInternalNav();
 
   return (
     <header className="nav">

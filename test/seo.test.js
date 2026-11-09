@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { shouldGoBack } from '../lib/back-nav.js';
 import { FEEDS } from '../lib/sources.js';
 import { ABOUT_DESCRIPTION, methodFacts } from '../lib/method.js';
 import {
@@ -200,6 +201,12 @@ test('llms.txt matches the site and does not promise ranking or citation', () =>
   assert.match(text, /不是原文全文/);
   assert.match(text, /不表示搜索排名或被引用的结果/);
   assert.doesNotMatch(text, /保证收录|一定被引用|排名第一/);
+});
+
+test('article back returns to the in-site list and otherwise stays on the site', () => {
+  assert.equal(shouldGoBack({ fromSite: true, historyLength: 2 }), true);
+  assert.equal(shouldGoBack({ fromSite: false, historyLength: 4 }), false);
+  assert.equal(shouldGoBack({ fromSite: true, historyLength: 1 }), false);
 });
 
 test('meta descriptions stay a prefix of the visible summary', () => {
