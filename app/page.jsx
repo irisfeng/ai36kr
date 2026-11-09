@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Story, { titleOf } from '@/components/Story';
 import SubscribeForm from '@/components/SubscribeForm';
 import { listPicks, listPosts, sourceHealth } from '@/lib/queries';
-import { SITE_DESCRIPTION, SITE_NAME, alternates, socialMeta } from '@/lib/seo';
+import { SITE_DESCRIPTION, SITE_NAME, alternates, itemListJsonLd, jsonLdScript, socialMeta, storyListItems } from '@/lib/seo';
 import { beijingDateKey, timeAgo } from '@/lib/time';
 
 // 首页 = 精选：过了编辑门槛的事件，一件事一条，按天分组。
@@ -41,6 +41,12 @@ export default async function HomePage() {
   return (
     <div className="container page-grid">
       <main className="main-col">
+        {posts.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListJsonLd({ name: '精选', url: '/', items: storyListItems(posts) })) }}
+          />
+        )}
         <header className="page-head home-head">
           <h1>值得看的 AI 新闻，一件事只说一次</h1>
           <p>过了入选门槛的条目按北京时间分日排列，点日期看当天日报。 <Link href="/about">编辑方法</Link></p>

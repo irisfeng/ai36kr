@@ -6,7 +6,7 @@ import ShareCard from '@/components/ShareCard';
 import BackLink from '@/components/BackLink';
 import Breadcrumb from '@/components/Breadcrumb';
 import { titleOf, summaryOf } from '@/components/Story';
-import { editionDays, getPost } from '@/lib/queries';
+import { editionDays, getPost, sameDayPicks } from '@/lib/queries';
 import { TIER_LABEL } from '@/lib/editorial';
 import { CATEGORIES } from '@/lib/categories';
 import { normalizeExternalHttpUrl } from '@/lib/external-url';
@@ -47,6 +47,7 @@ export default async function PostPage({ params }) {
   const day = beijingDateKey(post.created_at);
   const hasDaily = editionDays().includes(day);
   const representative = post.rep ? null : post.coverage.find((item) => item.rep);
+  const others = sameDayPicks(post.created_at, post.id);
   const crumbs = [{ name: '精选', href: '/' }];
   if (CATEGORIES.includes(post.category)) {
     crumbs.push({ name: post.category, href: `/all?cat=${encodeURIComponent(post.category)}` });
@@ -107,6 +108,19 @@ export default async function PostPage({ params }) {
             阅读原文 · {post.source} →
           </a>
         ) : null}
+
+        {others.length > 0 && (
+          <section className="article-coverage">
+            <h2 className="sec-title">这一天的其他精选</h2>
+            {others.map((item) => (
+              <Link key={item.id} className="row" href={`/post/${item.id}`}>
+                <time className="row-time" dateTime={item.created_at} suppressHydrationWarning>{timeHM(item.created_at)}</time>
+                <span className="row-title">{item.title_zh || item.title}</span>
+                <span className="row-source">{item.source}</span>
+              </Link>
+            ))}
+          </section>
+        )}
 
         {post.coverage.length > 0 && (
           <section className="article-coverage">

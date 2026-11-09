@@ -17,6 +17,7 @@
   - 每条含 `title`（原题）、`title_zh`、`summary_zh`、`source`、`tier`（T1 官方一手 / T1_5 从业者专栏 / T2 媒体）、`url`（原文）、`score`（编辑评分 0–100，可能为空）、`src_count`（报道这件事的独立信源数）、`coverage`（同一事件的其他报道）
 - 单条：`GET https://aikr.shddai.net/api/posts/{id}`
 - 规范页面是上面的 HTML。搜索引擎可以抓公开页面和 `/api/og/` 分享图，其余 `/api/` 不作为文档收录。
+- 新闻站点地图（近 48 小时的代表稿）：https://aikr.shddai.net/news-sitemap.xml
 
 ## 事实信息
 

@@ -11,8 +11,12 @@ import {
   aboutPageJsonLd,
   alternates,
   breadcrumbJsonLd,
+  buildNewsSitemapXml,
   buildSitemapEntries,
+  editionListItems,
+  itemListJsonLd,
   jsonLdScript,
+  storyListItems,
   metaDescription,
   newsArticleJsonLd,
   pageMetadata,
@@ -93,6 +97,7 @@ test('robots keeps training crawlers off /api and only lets search crawlers fetc
   assert.deepEqual(everyone.allow, ['/api/og/', '/']);
   assert.deepEqual(everyone.disallow, ['/api/']);
   assert.equal(groups.at(-1).sitemap, `${SITE_ORIGIN}/sitemap.xml`);
+  assert.match(renderRobotsTxt(), new RegExp(`Sitemap: ${SITE_ORIGIN.replaceAll('.', '\\.')}/news-sitemap.xml`));
   assert.ok(groups.indexOf(training) < groups.indexOf(everyone));
   assert.equal(fs.existsSync('app/robots.js'), false);
 });
@@ -201,6 +206,50 @@ test('llms.txt matches the site and does not promise ranking or citation', () =>
   assert.match(text, /不是原文全文/);
   assert.match(text, /不表示搜索排名或被引用的结果/);
   assert.doesNotMatch(text, /保证收录|一定被引用|排名第一/);
+});
+
+test('item lists follow the visible order and skip blank titles', () => {
+  const items = storyListItems([
+    { id: 1, title_zh: '中文', title: 'English' },
+    { id: 2, title: 'Only English' },
+    { id: 3, title: '   ' },
+    null,
+  ]);
+  const list = itemListJsonLd({ name: '精选', url: '/', items });
+  assert.equal(list.numberOfItems, 2);
+  assert.deepEqual(list.itemListElement.map((item) => [item.position, item.name, item.url]), [
+    [1, '中文', `${SITE_ORIGIN}/post/1`],
+    [2, 'Only English', `${SITE_ORIGIN}/post/2`],
+  ]);
+  const edition = editionListItems({
+    headline: { id: 9, title_zh: '头条' },
+    highlights: [{ id: 8, title: '看点' }],
+    sections: [['大模型', [{ id: 7, title_zh: '分类' }]]],
+    briefs: [{ id: 6, title: '简讯' }],
+  });
+  assert.deepEqual(edition.map((item) => item.name), ['头条', '看点', '分类', '简讯']);
+});
+
+test('news sitemap keeps only representative posts from the last 48 hours', () => {
+  const now = Date.parse('2026-11-09T00:00:00.000Z');
+  const xml = buildNewsSitemapXml({
+    now,
+    posts: [
+      { id: 1, title_zh: '新鲜', created_at: '2026-11-08T12:00:00.000Z' },
+      { id: 2, title: '太旧', created_at: '2026-11-06T00:00:00.000Z' },
+      { id: 3, title_zh: '未来', created_at: '2026-11-10T00:00:00.000Z' },
+      { id: 4, title_zh: 'A & B <C>', created_at: '2026-11-08T18:00:00.000Z' },
+    ],
+  });
+  assert.match(xml, /xmlns:news="http:\/\/www\.google\.com\/schemas\/sitemap-news\/0\.9"/);
+  assert.match(xml, new RegExp(`${SITE_ORIGIN}/post/1`));
+  assert.match(xml, new RegExp(`${SITE_ORIGIN}/post/4`));
+  assert.doesNotMatch(xml, /\/post\/2/);
+  assert.doesNotMatch(xml, /\/post\/3/);
+  assert.match(xml, /<news:name>听潮 TideWire<\/news:name>/);
+  assert.match(xml, /<news:language>zh<\/news:language>/);
+  assert.match(xml, /A &amp; B &lt;C&gt;/);
+  assert.equal((xml.match(/<url>/g) || []).length, 2);
 });
 
 test('article back returns to the in-site list and otherwise stays on the site', () => {

@@ -1,7 +1,7 @@
 import Story from '@/components/Story';
 import Breadcrumb from '@/components/Breadcrumb';
 import { listPosts } from '@/lib/queries';
-import { pageMetadata } from '@/lib/seo';
+import { itemListJsonLd, jsonLdScript, pageMetadata, storyListItems } from '@/lib/seo';
 
 export const revalidate = 300;
 
@@ -26,6 +26,12 @@ export default async function HotPage() {
         <h1>{TITLE}</h1>
         <p>{DESCRIPTION}</p>
       </div>
+      {posts.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListJsonLd({ name: TITLE, url: '/hot', items: storyListItems(posts) })) }}
+        />
+      )}
       {posts.length === 0 && <div className="empty">近 48 小时还没有形成热点。</div>}
       <ol className="hot-list">
         {posts.map((p, i) => (

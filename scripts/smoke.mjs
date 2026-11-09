@@ -1,7 +1,7 @@
 // 全页冒烟：node scripts/smoke.mjs [baseUrl]
 // 默认打本地 3000；上线后建议再跑一遍 https://aikr.shddai.net
 const base = process.argv[2] || 'http://localhost:3000';
-const pages = ['/', '/hot', '/daily', '/all', '/about', '/rss.xml', '/sitemap.xml', '/robots.txt', '/llms.txt'];
+const pages = ['/', '/hot', '/daily', '/all', '/about', '/rss.xml', '/sitemap.xml', '/news-sitemap.xml', '/robots.txt', '/llms.txt'];
 
 let postId = null;
 try {
@@ -54,6 +54,7 @@ const assertions = [
   ['编辑方法 canonical', canonical(about) === 'https://aikr.shddai.net/about'],
   ['训练爬虫不放行 OG', trainingBlock.includes('Disallow: /api/') && !trainingBlock.includes('/api/og/')],
   ['搜索爬虫可抓 OG', robots.includes('Allow: /api/og/')],
+  ['新闻站点地图已声明', robots.includes('https://aikr.shddai.net/news-sitemap.xml')],
   ['站点地图不用当天 23:59 充 lastmod', !sitemap.includes('T15:59:59') && sitemap.includes('<lastmod>')],
   ['搜索页 noindex', searchHtml.includes('name="robots" content="noindex, follow"') || searchHtml.includes('noindex, follow')],
   ['接口 noindex', (apiHeaders.headers.get('x-robots-tag') || '').includes('noindex')],
