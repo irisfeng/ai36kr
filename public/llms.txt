@@ -1,6 +1,6 @@
 # 听潮 TideWire
 
-> 中文 AI 资讯精选站。每隔几小时从 33 个中英文信源（OpenAI / Google DeepMind / Hugging Face 等官方博客，Simon Willison / Import AI / Latent Space 等从业者专栏，TechCrunch / The Verge / 36氪 / Hacker News 等媒体与社区）抓取，筛掉行情、活动推广和多事合集，把不同信源报道的同一件事并成一个事件，再按公开的标准评分选出值得看的。英文内容译为中文，摘要第一句直接回答「谁做了什么」。每日 08:00（北京时间）出日报。
+> 中文 AI 资讯精选站。每隔几小时从 33 个中英文信源抓取，筛掉行情、活动推广和多事合集，把不同信源报道的同一件事并成一个事件，再按公开的标准评分选出值得看的。英文内容译为中文。摘要依据 RSS 改写，不是原文全文。邮件日报在北京时间 8 点后的几分钟发出；网页 /daily 展示最近 24 小时，这段时间没有内容时放宽到 48 小时。
 
 ## 页面
 
@@ -8,6 +8,7 @@
 - [热点](https://aikr.shddai.net/hot)：按事件算热度，48 小时内每个独立信源只计一次，24 小时减半
 - [日报](https://aikr.shddai.net/daily)：头条、看点、分类要闻、简讯；归档在 /daily/YYYY-MM-DD（北京日历日）
 - [全部动态](https://aikr.shddai.net/all)：抓到的每一条，不筛不并；`?q=` 搜索，`?cat=` 按分类
+- [编辑方法](https://aikr.shddai.net/about)：信源、去重、评分门槛、热度和日报规则
 
 ## 给程序用
 
@@ -15,10 +16,12 @@
 - JSON：`GET https://aikr.shddai.net/api/posts?sort=pick|hot|all&cat=&q=&since=24h&limit=50&offset=0`
   - 每条含 `title`（原题）、`title_zh`、`summary_zh`、`source`、`tier`（T1 官方一手 / T1_5 从业者专栏 / T2 媒体）、`url`（原文）、`score`（编辑评分 0–100，可能为空）、`src_count`（报道这件事的独立信源数）、`coverage`（同一事件的其他报道）
 - 单条：`GET https://aikr.shddai.net/api/posts/{id}`
+- 规范页面是上面的 HTML。搜索引擎可以抓公开页面和 `/api/og/` 分享图，其余 `/api/` 不作为文档收录。
 
 ## 事实信息
 
 - 站点语言：中文
 - 内容性质：新闻聚合与编辑筛选，每条附原始来源链接；摘要由模型依据 RSS 摘要改写，不代表原文全文
-- 评分标准与入选门槛公开在代码仓库：prompts/editor.js、lib/editorial.js
+- 评分标准与入选门槛：网页见 /about；代码见 prompts/editor.js、lib/editorial.js
 - 站点地址：https://aikr.shddai.net
+- 本文件只说明站点里有什么，不表示搜索排名或被引用的结果

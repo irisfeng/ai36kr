@@ -2,14 +2,21 @@ import Link from 'next/link';
 import Story, { titleOf } from '@/components/Story';
 import SubscribeForm from '@/components/SubscribeForm';
 import { listPicks, listPosts, sourceHealth } from '@/lib/queries';
-import { alternates } from '@/lib/seo';
+import { SITE_DESCRIPTION, SITE_NAME, alternates, socialMeta } from '@/lib/seo';
 import { beijingDateKey, timeAgo } from '@/lib/time';
 
 // 首页 = 精选：过了编辑门槛的事件，一件事一条，按天分组。
 // 整页静态直出、边缘缓存 5 分钟，大多数请求不触发 Function / 数据库
 export const revalidate = 300;
 
-export const metadata = { alternates: alternates('/') };
+const HOME_TITLE = `${SITE_NAME} - 值得看的 AI 新闻，一件事只说一次`;
+
+export const metadata = {
+  title: { absolute: HOME_TITLE },
+  description: SITE_DESCRIPTION,
+  alternates: alternates('/'),
+  ...socialMeta({ title: HOME_TITLE, description: SITE_DESCRIPTION, path: '/' }),
+};
 
 function dayLabel(key, todayKey) {
   const [, m, d] = key.split('-').map(Number);
@@ -34,6 +41,10 @@ export default async function HomePage() {
   return (
     <div className="container page-grid">
       <main className="main-col">
+        <header className="page-head home-head">
+          <h1>值得看的 AI 新闻，一件事只说一次</h1>
+          <p>过了入选门槛的条目按北京时间分日排列，点日期看当天日报。 <Link href="/about">编辑方法</Link></p>
+        </header>
         {posts.length === 0 && <div className="empty">正在抓取第一批内容，稍后刷新。</div>}
         {days.map((day) => {
           const { rel, date } = dayLabel(day.key, todayKey);
@@ -79,6 +90,7 @@ export default async function HomePage() {
           <p className="side-note">
             {health.total} 个信源，每隔几小时抓一轮。行情、活动推广、多事合集先筛掉；
             同一件事的多家报道并成一条；剩下的按公开的标准评分，官方一手门槛低、媒体门槛高。
+            {' '}<Link href="/about">规则写在编辑方法里。</Link>
           </p>
           <p className="side-status" suppressHydrationWarning>
             {health.online}/{health.total} 源在线{health.lastFetch ? ` · ${timeAgo(health.lastFetch)}更新` : ''}

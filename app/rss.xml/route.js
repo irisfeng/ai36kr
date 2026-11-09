@@ -1,10 +1,10 @@
 // 本站 RSS 输出：默认是精选（一件事一条）；/rss.xml?feed=all 是全部动态
 import { listPicks, listPosts } from '@/lib/queries';
-import { tracked } from '@/lib/seo';
+import { SITE_ORIGIN, tracked } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
-const SITE = 'https://aikr.shddai.net';
+const SITE = SITE_ORIGIN;
 
 function esc(s) {
   return String(s || '')

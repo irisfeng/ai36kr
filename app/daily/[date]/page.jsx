@@ -17,12 +17,27 @@ function isValidDate(date) {
   return DATE_RE.test(date) && !Number.isNaN(new Date(`${date}T00:00:00Z`).getTime());
 }
 
+function archiveCopy(date, edition) {
+  const title = `${fmt(date)} AI 日报`;
+  const description = edition
+    ? `当日 ${edition.total} 件事，选出 ${edition.main.length} 条。一件事一条。`
+    : `${fmt(date)} AI 圈的头条、看点与分类要闻。一件事一条。`;
+  return { title, description };
+}
+
 export async function generateMetadata({ params }) {
   const { date } = await params;
   if (!isValidDate(date)) return { title: '日报' };
-  const title = `${fmt(date)} AI 日报`;
-  const description = `${fmt(date)} AI 圈值得知道的事：头条、看点与分类要闻。`;
-  return { title, description, alternates: alternates(`/daily/${date}`), ...dailyShareMeta({ date, title, description }) };
+  const days = editionDays();
+  const isListed = days.includes(date) || date === beijingDateKey(new Date().toISOString());
+  const edition = isListed ? loadEdition(beijingDayRange(date)) : null;
+  const { title, description } = archiveCopy(date, edition);
+  return {
+    title,
+    description,
+    alternates: alternates(`/daily/${date}`),
+    ...dailyShareMeta({ date, title, description, path: `/daily/${date}` }),
+  };
 }
 
 export default async function DailyArchivePage({ params }) {
@@ -39,14 +54,20 @@ export default async function DailyArchivePage({ params }) {
   const prev = days.find((d) => d < date);
   const next = days.findLast((d) => d > date);
   const head = edition.headline ? (edition.headline.title_zh || edition.headline.title) : '';
+  const { title, description } = archiveCopy(date, edition);
 
   return (
     <DailyView
       edition={edition}
-      headTitle={`${fmt(date)}`}
-      headDesc={`当日 ${edition.total} 件事，选出 ${edition.main.length} 条`}
-      shareTitle={`${fmt(date)} AI 日报 · 听潮`}
-      shareText={head ? `头条：${head}` : `${fmt(date)} AI 日报`}
+      headTitle={title}
+      headDesc={description}
+      crumbs={[
+        { name: '精选', href: '/' },
+        { name: 'AI 日报', href: '/daily' },
+        { name: fmt(date), href: `/daily/${date}`, current: true },
+      ]}
+      shareTitle={title}
+      shareText={head ? `头条：${head}` : title}
       sharePath={`/daily/${date}`}
       navPrev={prev ? `/daily/${prev}` : null}
       navNext={next ? `/daily/${next}` : null}

@@ -2,17 +2,19 @@ import Link from 'next/link';
 import Story, { StoryRow } from '@/components/Story';
 import ShareButtons from '@/components/ShareButtons';
 import SubscribeForm from '@/components/SubscribeForm';
+import Breadcrumb from '@/components/Breadcrumb';
 
 // 日报视图：/daily（最近 24 小时）与 /daily/[date]（日历日归档）共用。
 // 版式即编排规则：头条 → 看点 → 分类 → 简讯（见 lib/edition.js）
 export default function DailyView({
   edition, headTitle, headDesc, shareTitle, shareText, sharePath = '/daily',
-  navPrev = null, navNext = null, showPoster = false,
+  navPrev = null, navNext = null, showPoster = false, crumbs = null,
 }) {
   const { headline, highlights, sections, briefs } = edition;
   return (
     <div className="container narrow">
       <div className="page-head">
+        {crumbs ? <Breadcrumb items={crumbs} /> : null}
         <h1>{headTitle}</h1>
         <p suppressHydrationWarning>{headDesc}</p>
         {(navPrev || navNext) && (

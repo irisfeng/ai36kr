@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { StoryRow } from '@/components/Story';
+import Breadcrumb from '@/components/Breadcrumb';
 import { listPosts } from '@/lib/queries';
 import { CATEGORIES } from '@/lib/categories';
-import { alternates } from '@/lib/seo';
+import { pageMetadata, searchResultMetadata } from '@/lib/seo';
 import { beijingDateKey } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
@@ -12,9 +13,15 @@ const PAGE_SIZE = 100;
 export async function generateMetadata({ searchParams }) {
   const { q = '' } = await searchParams;
   const kw = String(q).trim().slice(0, 100);
+  // 分类和翻页仍把 canonical 指回 /all：这是同一份列表的视图，不把已有收录拆到带参数的地址上。
+  // 搜索页 noindex，canonical 同样回到 /all。
   return kw
-    ? { title: `「${kw}」的搜索结果`, robots: { index: false } }
-    : { title: '全部动态', description: '听潮抓到的每一条 AI 资讯，不筛不并，按时间排列。', alternates: alternates('/all') };
+    ? searchResultMetadata(kw)
+    : pageMetadata({
+      title: '全部 AI 动态',
+      description: '听潮抓到的每一条 AI 资讯，不筛不并，按时间排列。',
+      path: '/all',
+    });
 }
 
 export default async function AllPage({ searchParams }) {
@@ -45,7 +52,15 @@ export default async function AllPage({ searchParams }) {
   return (
     <div className="container narrow">
       <div className="page-head">
-        <h1>{q ? `「${q}」` : '全部动态'}</h1>
+        <Breadcrumb items={q ? [
+          { name: '精选', href: '/' },
+          { name: '全部 AI 动态', href: '/all' },
+          { name: `「${q}」`, href: `/all?q=${encodeURIComponent(q)}`, current: true },
+        ] : [
+          { name: '精选', href: '/' },
+          { name: '全部 AI 动态', href: '/all', current: true },
+        ]} />
+        <h1>{q ? `「${q}」` : '全部 AI 动态'}</h1>
         <p>
           {q
             ? <>搜索标题与摘要 · <Link href="/all">清除</Link></>
