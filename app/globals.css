@@ -99,6 +99,7 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 }
 
 
+
 /* ---------- 布局 ---------- */
 .page-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 56px; padding-top: 30px; padding-bottom: 72px; }
 .main-col { min-width: 0; }
@@ -215,6 +216,8 @@ a.row:hover .row-title, a.row-title:hover { color: var(--red); }
 
 /* ---------- 页面标题（红色方印句点） ---------- */
 .page-head { padding: 36px 0 10px; }
+.page-head.home-head { padding: 0 0 18px; }
+.page-head.home-head h1 { font-size: 28px; display: block; }
 .page-head h1 { font-family: var(--serif); font-size: 34px; font-weight: 900; letter-spacing: 0.04em; display: inline-block; }
 .page-head h1::after {
   content: ''; display: inline-block; width: 9px; height: 9px;
@@ -223,6 +226,26 @@ a.row:hover .row-title, a.row-title:hover { color: var(--red); }
 .page-head p { color: var(--ink-3); font-size: 13.5px; margin-top: 8px; }
 
 .page-head p a { color: var(--red); }
+.article-kicker { margin: 0 0 10px; font-size: 12.5px; line-height: 1.7; color: var(--ink-3); }
+.article-kicker .back-link {
+  display: inline-flex; align-items: center; gap: 5px; vertical-align: baseline;
+  margin: -10px 0; padding: 10px 2px;
+  font-size: inherit; color: inherit;
+}
+.article-kicker .back-link:hover { color: var(--red); }
+.kicker-sep { margin: 0 8px; color: var(--line); }
+.article-kicker .crumb { display: inline; margin: 0; }
+.article-kicker .crumb ol { display: inline; width: auto; }
+.article-kicker .crumb li { display: inline; max-width: none; }
+.article-kicker .crumb li:last-child { flex: none; }
+.article-kicker .crumb [aria-current='page'] { white-space: normal; }
+.crumb { margin: 0 0 10px; }
+.crumb ol { display: flex; flex-wrap: wrap; width: 100%; list-style: none; font-size: 12.5px; color: var(--ink-3); }
+.crumb li { display: flex; align-items: center; min-width: 0; max-width: 100%; }
+.crumb li:last-child { flex: 1 1 auto; }
+.crumb li:not(:last-child)::after { content: '/'; margin: 0 8px; color: var(--line); }
+.crumb a:hover { color: var(--red); }
+.crumb [aria-current='page'] { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .page-head p .row-pick { margin: 0 2px 0 4px; }
 
 /* ---------- 文章详情 ---------- */
@@ -230,7 +253,20 @@ a.row:hover .row-title, a.row-title:hover { color: var(--red); }
 .article .story-meta { margin-bottom: 14px; }
 .article .story-score { margin-left: 0; }
 .article h1 { font-family: var(--serif); font-size: 31px; font-weight: 900; line-height: 1.45; }
-.article-summary { margin: 22px 0 26px; font-size: 17px; line-height: 1.95; color: #26251F; }
+.article-summary { margin: 22px 0 12px; font-size: 17px; line-height: 1.95; color: #26251F; }
+.article-note { font-size: 13px; line-height: 1.8; color: var(--ink-3); margin: 0 0 22px; }
+.article-note a { color: var(--red); }
+.method { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
+.method-sec { margin-top: 28px; }
+.method-sec p, .method-sec li { font-size: 15px; line-height: 1.9; color: var(--ink-2); }
+.method-sec p + p, .method-sec ul { margin-top: 8px; }
+.method-sec ul { margin-left: 1.2em; }
+.method-sec h2 { margin-bottom: 8px; }
+.source-line { margin-top: 14px; }
+.source-line h3 { font-family: var(--serif); font-size: 16px; font-weight: 900; color: var(--ink); }
+.source-line p { color: var(--ink-2); line-height: 1.9; }
+.source-line a { border-bottom: 1px solid var(--line); }
+.source-line a:hover { color: var(--red); }
 .article-cover { margin-bottom: 26px; }
 .article-cover .cover-img { display: block; width: 100%; max-height: 380px; object-fit: cover; }
 .article.no-cover .article-cover { display: none; }
@@ -315,11 +351,13 @@ a.row:hover .row-title, a.row-title:hover { color: var(--red); }
   .masthead-right { margin-left: auto; }
   .nav-search input, .nav-search input:focus { width: 128px; }
   .nav-links a { white-space: nowrap; padding: 10px 16px; }
+  .article-kicker .back-link { padding: 12px 8px 12px 0; margin: -8px 0; color: var(--ink-2); }
   .story-title { font-size: 18px; }
   .story-lead .story-title { font-size: 23px; }
   .article h1 { font-size: 25px; }
   .article-summary { font-size: 16px; }
   .page-head h1 { font-size: 26px; }
+  .page-head.home-head h1 { font-size: 24px; }
   .row { grid-template-columns: 40px minmax(0, 1fr); }
   .row-source { grid-column: 2; }
   .hot-list li { grid-template-columns: 32px minmax(0, 1fr); }

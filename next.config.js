@@ -22,6 +22,11 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
+      // 接口不作为文档收录。noindex 不放开抓取；分享图是否可抓由 robots.txt 的 /api/og/ 决定
+      {
+        source: '/api/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex' }],
+      },
     ];
   },
 };

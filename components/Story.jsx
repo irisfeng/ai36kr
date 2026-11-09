@@ -42,9 +42,9 @@ export default function Story({ post, lead = false, clock = false }) {
         {post.ext_score > 0 ? <span className="story-hn">HN {post.ext_score}</span> : null}
         {Number.isFinite(post.score) ? <span className="story-score" title="编辑评分">{post.score}</span> : null}
       </div>
-      <h2 className="story-title">
+      <h3 className="story-title">
         <Link href={`/post/${post.id}`}>{titleOf(post)}</Link>
-      </h2>
+      </h3>
       {summary ? <p className="story-summary">{summary}</p> : null}
       <Coverage post={post} />
     </article>
