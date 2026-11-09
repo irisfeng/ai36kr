@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import CoverImage from '@/components/CoverImage';
 import ShareButtons from '@/components/ShareButtons';
 import ShareCard from '@/components/ShareCard';
 import BackLink from '@/components/BackLink';
 import Breadcrumb from '@/components/Breadcrumb';
 import { titleOf, summaryOf } from '@/components/Story';
-import { editionDays, getPost, sameDayPicks } from '@/lib/queries';
+import { editionDays, getPost, representativeIdFor, sameDayPicks } from '@/lib/queries';
 import { TIER_LABEL } from '@/lib/editorial';
 import { CATEGORIES } from '@/lib/categories';
 import { normalizeExternalHttpUrl } from '@/lib/external-url';
@@ -41,7 +41,12 @@ export async function generateMetadata({ params }) {
 export default async function PostPage({ params }) {
   const { id } = await params;
   const post = loadPost(id);
-  if (!post) notFound();
+  if (!post) {
+    const numeric = Number(id);
+    const target = Number.isSafeInteger(numeric) && numeric > 0 ? representativeIdFor(numeric) : null;
+    if (target) permanentRedirect(`/post/${target}`);
+    notFound();
+  }
   const title = titleOf(post);
   const summary = summaryOf(post);
   const day = beijingDateKey(post.created_at);

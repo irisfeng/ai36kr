@@ -52,9 +52,14 @@ test('post queries apply stable SQL ordering before limit and offset', async () 
       UPDATE posts SET event_id = id, rep = 1, noise = '行情' WHERE id = 5;
     `);
     assert.deepEqual(editionDays(1), ['2026-07-26', '2026-07-25']);
-    // 只有零星一两件事、又没有精选的日子不算一期日报；有精选的日子不看件数
+    // 凑不够 N 篇、又没有精选的日子，调用方可以自己提高门槛；默认只要还有一篇就保留归档
     assert.deepEqual(editionDays(2), ['2026-07-26']);
-    assert.deepEqual(editionDays(), ['2026-07-26']);
+    assert.deepEqual(editionDays(), ['2026-07-26', '2026-07-25']);
+    // 1 号还在库里，不是「缺失 id」。把代表稿改到 2 号后，按 1 号能找到存活的代表稿
+    db.exec('UPDATE posts SET rep = 0 WHERE id = 1; UPDATE posts SET rep = 1 WHERE id = 2');
+    const { representativeIdFor } = await import('../lib/queries.js');
+    assert.equal(representativeIdFor(1), 2);
+    assert.equal(representativeIdFor(999), null);
 
     // 按时间筛的查询要走 created_at 索引，不能整表扫（Turso 按扫过的行数计费）
     const plan = (sql) => db.prepare(`EXPLAIN QUERY PLAN ${sql}`).all().map((r) => r.detail).join(' ; ');
