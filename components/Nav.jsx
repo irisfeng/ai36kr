@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useTrackInternalNav } from './BackLink';
+import { useState } from 'react';
+import BackLink, { useTrackInternalNav } from './BackLink';
 import SubscribeEntry from './SubscribeEntry';
 import { beijingNow } from '@/lib/time';
 
@@ -18,6 +18,7 @@ export default function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const [q, setQ] = useState('');
+  useTrackInternalNav();
 
   function onSearch(e) {
     e.preventDefault();
@@ -29,20 +30,7 @@ export default function Nav() {
   const bj = beijingNow();
   const today = `${bj.getUTCFullYear()}年${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日 星期${'日一二三四五六'[bj.getUTCDay()]}`;
   const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
-  useTrackInternalNav();
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem('tw-restore-scroll') !== '1') return;
-      sessionStorage.removeItem('tw-restore-scroll');
-      const saved = JSON.parse(sessionStorage.getItem('tw-scroll') || 'null');
-      const here = `${window.location.pathname}${window.location.search}`;
-      if (!saved || saved.path !== here || !Number.isFinite(saved.y)) return;
-      const go = () => window.scrollTo(0, saved.y);
-      go();
-      requestAnimationFrame(go);
-      setTimeout(go, 50);
-    } catch { /* 没有可恢复的位置 */ }
-  }, [pathname]);
+  const onPost = Boolean(pathname && pathname.startsWith('/post/'));
 
   return (
     <header className="nav">
@@ -76,6 +64,13 @@ export default function Nav() {
           </nav>
         </div>
       </div>
+      {onPost ? (
+        <div className="back-bar">
+          <div className="container back-bar-inner">
+            <BackLink />
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }

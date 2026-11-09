@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import CoverImage from '@/components/CoverImage';
 import ShareButtons from '@/components/ShareButtons';
 import ShareCard from '@/components/ShareCard';
-import BackLink from '@/components/BackLink';
 import Breadcrumb from '@/components/Breadcrumb';
 import { titleOf, summaryOf } from '@/components/Story';
 import { editionDays, getPost } from '@/lib/queries';
@@ -72,11 +71,7 @@ export default async function PostPage({ params }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
         />
-        <div className="article-kicker">
-          <BackLink />
-          <span className="kicker-sep" aria-hidden="true">/</span>
-          <Breadcrumb items={crumbs} />
-        </div>
+        <Breadcrumb items={crumbs} />
         <div className="story-meta">
           <span className={`story-source tier-${post.tier || 'T2'}`}>{post.source}</span>
           {post.tier === 'T1' ? <span className="story-tier">{TIER_LABEL.T1}</span> : null}
