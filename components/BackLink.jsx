@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { shouldGoBack } from '@/lib/back-nav';
 
 const NAV_KEY = 'tw-internal-nav';
+const SCROLL_KEY = 'tw-scroll';
+const RESTORE_KEY = 'tw-restore-scroll';
 
 // 从列表点进文章时记下「这一跳发生在站内」。直接打开文章链接时没有这个标记。
 export function markInternalNav() {
@@ -29,7 +31,14 @@ export function useTrackInternalNav() {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
       try {
         const url = new URL(anchor.href, window.location.href);
-        if (url.origin === window.location.origin) markInternalNav();
+        if (url.origin !== window.location.origin) return;
+        markInternalNav();
+        if (url.pathname.startsWith('/post/')) {
+          sessionStorage.setItem(SCROLL_KEY, JSON.stringify({
+            path: `${window.location.pathname}${window.location.search}`,
+            y: window.scrollY,
+          }));
+        }
       } catch { /* 忽略 javascript: 等无效链接 */ }
     }
     document.addEventListener('click', onClick, true);
@@ -37,25 +46,21 @@ export function useTrackInternalNav() {
   }, []);
 }
 
-export default function BackLink({ fallback = '/', listLabel = '返回上一页', homeLabel = '返回精选' }) {
+export default function BackLink({ fallback = '/', children = '返回' }) {
   const router = useRouter();
-  const [backToList, setBackToList] = useState(false);
-
-  useEffect(() => {
-    setBackToList(shouldGoBack({ fromSite: cameFromThisSite(), historyLength: window.history.length }));
-  }, []);
 
   function onClick(event) {
     event.preventDefault();
-    // 点击时再判一次：首屏文字可能还停在「返回精选」，去向不能跟着那一帧走错。
-    if (shouldGoBack({ fromSite: cameFromThisSite(), historyLength: window.history.length })) router.back();
-    else router.push(fallback);
+    if (shouldGoBack({ fromSite: cameFromThisSite(), historyLength: window.history.length })) {
+      try { sessionStorage.setItem(RESTORE_KEY, '1'); } catch { /* 写不了就只做返回 */ }
+      router.back();
+    } else router.push(fallback);
   }
 
   return (
     <a className="back-link" href={fallback} data-back-link="" onClick={onClick}>
       <span aria-hidden="true">←</span>
-      {backToList ? listLabel : homeLabel}
+      {children}
     </a>
   );
 }
