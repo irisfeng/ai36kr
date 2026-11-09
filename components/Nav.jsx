@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTrackInternalNav } from './BackLink';
 import SubscribeEntry from './SubscribeEntry';
 import { beijingNow } from '@/lib/time';
@@ -30,6 +30,19 @@ export default function Nav() {
   const today = `${bj.getUTCFullYear()}年${bj.getUTCMonth() + 1}月${bj.getUTCDate()}日 星期${'日一二三四五六'[bj.getUTCDay()]}`;
   const isActive = (href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
   useTrackInternalNav();
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('tw-restore-scroll') !== '1') return;
+      sessionStorage.removeItem('tw-restore-scroll');
+      const saved = JSON.parse(sessionStorage.getItem('tw-scroll') || 'null');
+      const here = `${window.location.pathname}${window.location.search}`;
+      if (!saved || saved.path !== here || !Number.isFinite(saved.y)) return;
+      const go = () => window.scrollTo(0, saved.y);
+      go();
+      requestAnimationFrame(go);
+      setTimeout(go, 50);
+    } catch { /* 没有可恢复的位置 */ }
+  }, [pathname]);
 
   return (
     <header className="nav">
