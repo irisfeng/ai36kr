@@ -8,7 +8,7 @@ import db from '../lib/db.js';
 
 const TABLES = [
   'posts', 'comments', 'votes', 'reactions', 'flashes', 'products',
-  'subscribers', 'glossary', 'source_status', 'digest_log',
+  'subscribers', 'glossary', 'source_status', 'digest_log', 'post_redirects',
 ];
 
 const outDir = process.argv[2] || 'backup';
