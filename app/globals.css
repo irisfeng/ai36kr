@@ -157,6 +157,11 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .more-link { margin-top: 28px; font-size: 13.5px; color: var(--ink-3); }
 .more-link a:hover { color: var(--red); }
 .edition-note { margin-top: 8px; font-size: 13.5px; color: var(--ink-3); }
+.home-promise {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  margin: 0 0 8px; padding: 12px 0 14px; border-bottom: 1px solid var(--line);
+}
+.home-promise p { margin: 0; font-size: 13.5px; line-height: 1.7; color: var(--ink-2); }
 .earlier { margin-top: 48px; }
 .earlier-day + .earlier-day { margin-top: 28px; }
 .day-toggle { font-family: var(--sans); font-size: 13px; letter-spacing: 0; color: var(--ink-2); }
@@ -432,9 +437,14 @@ a.row:hover .row-title, a.row-title:hover { color: var(--red); }
   .subscribe-form input { width: 150px; font-size: 16px !important; height: 40px; }
   .subscribe-form button { height: 40px; }
 }
-/* 侧栏里的订阅表单占满栏宽 */
-.side-card .subscribe-form { display: flex; flex-wrap: nowrap; }
-.side-card .subscribe-form input { flex: 1; min-width: 0; width: auto; }
+/* 侧栏和头条下方的订阅表单占满所在栏宽 */
+.side-card .subscribe-form,
+.home-promise .subscribe-form { display: flex; flex-wrap: nowrap; }
+.side-card .subscribe-form input,
+.home-promise .subscribe-form input { flex: 1; min-width: 0; width: auto; }
+@media (max-width: 900px) {
+  .home-promise { flex-direction: column; align-items: stretch; }
+}
 
 /* ---------- 订阅入口 ---------- */
 .nav-subscribe {
