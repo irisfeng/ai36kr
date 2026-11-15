@@ -22,7 +22,7 @@ test('latest edition is the Beijing calendar day, and rolls back only when that 
       `INSERT INTO posts
         (id, title, title_norm, title_zh, source, category, summary, content, up, down, created_at,
          ext_score, score, event_score, tier, event_id, rep, selected, noise, src_count)
-       VALUES (?, ?, ?, ?, '量子位', '大模型', '摘要说明谁做了什么。', '', 0, 0, ?, 0, ?, ?, 'T2', ?, 1, 1, '', 1)`,
+       VALUES (?, ?, ?, ?, '量子位', '大模型', 'DeepSeek 开放全家桶 API，官方说明各项功能可以组合调用。', '', 0, 0, ?, 0, ?, ?, 'T2', ?, 1, 1, '', 1)`,
     );
     // 前一天的高分稿，滚动窗会把它当头条
     insert.run(403894, '突发！DeepSeek开放全家桶API', 'deepseek-api', '突发！DeepSeek开放全家桶API', DEEPSEEK_AT, 83, 83, 403894);

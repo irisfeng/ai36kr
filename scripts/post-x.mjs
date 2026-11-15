@@ -5,6 +5,7 @@
 //   X_ACCESS_TOKEN / X_ACCESS_SECRET（App 所属账号的 Access Token，需 Read+Write 权限）
 // 缺一即静默跳过（exit 0），不影响日报主流程
 import crypto from 'node:crypto';
+import { displayTitle } from '../lib/editorial.js';
 import { loadLatestEdition } from '../lib/queries.js';
 
 const SITE = 'https://aikr.shddai.net';
@@ -26,7 +27,7 @@ if (!top) {
 const weight = (s) => [...s].reduce((w, ch) => w + (ch.codePointAt(0) > 0x2e7f ? 2 : 1), 0);
 const link = `${SITE}/post/${top.id}?utm_source=x`;
 const head = '【听潮日报】';
-const title = (top.title_zh || top.title).replace(/\s+/g, ' ').trim();
+const title = displayTitle(top).replace(/\s+/g, ' ').trim();
 const summary = (top.summary_zh || top.summary || '').replace(/\s+/g, ' ').trim();
 let text = `${head}${title}\n\n${summary}\n${link}`;
 if (weight(text) > 275) {

@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { timeAgo, timeHM } from '@/lib/time';
-import { shownScore, TIER_LABEL } from '@/lib/editorial';
+import { displayTitle, shownScore, TIER_LABEL } from '@/lib/editorial';
 
-export const titleOf = (p) => p.title_zh || p.title;
+export const titleOf = (p) => displayTitle(p);
 export const summaryOf = (p) => {
   const s = p.summary_zh || p.summary || '';
   // 入库时无摘要的条目用标题顶替过摘要：不重复显示
@@ -22,7 +22,7 @@ export function Updates({ post }) {
       {shown.map((c, i) => (
         <li key={c.id}>
           <span className="story-update-label">{i === 0 ? '更新' : ''}</span>
-          <Link href={`/post/${c.id}`}>{c.title_zh || c.title}</Link>
+          <Link href={`/post/${c.id}`}>{titleOf(c)}</Link>
           <time dateTime={c.created_at} suppressHydrationWarning>{timeHM(c.created_at)}</time>
         </li>
       ))}

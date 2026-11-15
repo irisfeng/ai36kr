@@ -1,4 +1,5 @@
 import DailyView from '@/components/DailyView';
+import { displayTitle } from '@/lib/editorial';
 import { describeEdition } from '@/lib/edition';
 import { editionDays, loadLatestEdition } from '@/lib/queries';
 import { alternates, dailyShareMeta } from '@/lib/seo';
@@ -39,7 +40,7 @@ export default function DailyPage() {
   const { title, description } = dailyCopy(edition);
   const todayKey = edition.dateKey || beijingDateKey(now);
   const prev = editionDays().find((d) => d < todayKey);
-  const head = edition.headline ? (edition.headline.title_zh || edition.headline.title) : '';
+  const head = edition.headline ? displayTitle(edition.headline) : '';
   return (
     <DailyView
       edition={edition}

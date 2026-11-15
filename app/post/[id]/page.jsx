@@ -135,7 +135,7 @@ export default async function PostPage({ params }) {
             {others.map((item) => (
               <Link key={item.id} className="row" href={`/post/${item.id}`}>
                 <time className="row-time" dateTime={item.created_at} suppressHydrationWarning>{timeHM(item.created_at)}</time>
-                <span className="row-title">{item.title_zh || item.title}</span>
+                <span className="row-title">{titleOf(item)}</span>
                 <span className="row-source">{item.source}</span>
               </Link>
             ))}
@@ -148,7 +148,7 @@ export default async function PostPage({ params }) {
             {post.coverage.map((c) => (
               <a key={c.id} className="row" href={c.url} target="_blank" rel="noopener noreferrer">
                 <time className="row-time" dateTime={c.created_at} suppressHydrationWarning>{timeHM(c.created_at)}</time>
-                <span className="row-title">{c.title_zh || c.title}</span>
+                <span className="row-title">{titleOf(c)}</span>
                 <span className="row-source">{c.source} ↗</span>
               </a>
             ))}

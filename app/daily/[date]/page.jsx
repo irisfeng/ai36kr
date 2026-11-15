@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import DailyView from '@/components/DailyView';
+import { displayTitle } from '@/lib/editorial';
 import { editionDays, loadEdition } from '@/lib/queries';
 import { alternates, dailyShareMeta } from '@/lib/seo';
 import { beijingDateKey, beijingDayRange } from '@/lib/time';
@@ -53,7 +54,7 @@ export default async function DailyArchivePage({ params }) {
   // days 是新到旧：前一天取第一个更早的，后一天取最后一个更晚的
   const prev = days.find((d) => d < date);
   const next = days.findLast((d) => d > date);
-  const head = edition.headline ? (edition.headline.title_zh || edition.headline.title) : '';
+  const head = edition.headline ? displayTitle(edition.headline) : '';
   const { title, description } = archiveCopy(date, edition);
 
   return (

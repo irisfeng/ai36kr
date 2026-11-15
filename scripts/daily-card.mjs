@@ -2,6 +2,7 @@
 // 由 daily-digest.yml 每日 08:00（北京）调用并提交
 import fs from 'node:fs';
 import QRCode from 'qrcode';
+import { displayTitle } from '../lib/editorial.js';
 import { loadLatestEdition } from '../lib/queries.js';
 import { coverFor, coverInk } from '../lib/categories.js';
 
@@ -15,7 +16,7 @@ if (!top) {
   process.exit(0);
 }
 
-const title = top.title_zh || top.title;
+const title = displayTitle(top);
 const postUrl = `${SITE}/post/${top.id}`;
 const date = new Date(Date.now() + 8 * 3600000);
 const dateStr = `${date.getUTCFullYear()} 年 ${date.getUTCMonth() + 1} 月 ${date.getUTCDate()} 日`;

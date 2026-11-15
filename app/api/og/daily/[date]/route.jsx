@@ -2,6 +2,7 @@
 // 文章页的分享海报是 SVG（app/api/sharecard），这些平台不认 SVG 预览，所以这里出位图。
 // 内容与日报页同一份编排：头条 + 三条看点。
 import { ImageResponse } from 'next/og';
+import { displayTitle } from '@/lib/editorial';
 import { editionDays, loadEdition, loadLatestEdition } from '@/lib/queries';
 import { beijingDateKey, beijingDayRange } from '@/lib/time';
 import { consumeRequestRateLimit } from '@/lib/rate-limit';
@@ -15,7 +16,7 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 // 每次请求要读库并渲染位图，按 IP 30 次/分钟；正常流量由 CDN 缓存挡掉
 const OG_LIMIT = { scope: 'og-daily', limit: 30, windowMs: 60 * 1000 };
 
-const titleOf = (p) => (p.title_zh || p.title || '').replace(/\s+/g, ' ').trim();
+const titleOf = (p) => displayTitle(p).replace(/\s+/g, ' ').trim();
 // 按显示宽度截断：中文算 1，ASCII 算 0.55
 function clip(text, max) {
   let w = 0, out = '';

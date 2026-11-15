@@ -3,6 +3,7 @@
 // 幂等：digest_log 按北京日历日去重——多时点调度下首个成功运行的实例发送，其余时点跳过
 import fs from 'node:fs';
 import db from '../lib/db.js';
+import { displayTitle } from '../lib/editorial.js';
 import { loadLatestEdition } from '../lib/queries.js';
 import { sendEmail, dailyEmailHtml } from '../lib/email.js';
 
@@ -73,7 +74,7 @@ for (const sub of targets) {
     await sendEmail({
       to: sub.email,
       // 标题用头条：比固定的刊名更值得点开
-      subject: `听潮日报｜${edition.headline.title_zh || edition.headline.title}`,
+      subject: `听潮日报｜${displayTitle(edition.headline)}`,
       html: dailyEmailHtml({
         dateStr, edition,
         unsubUrl: `${SITE}/api/subscribe/unsubscribe?token=${sub.token}`,
@@ -97,7 +98,7 @@ db.prepare(
 summaryLines.push(
   '## 日报邮件', '',
   `${failed && !sent ? '❌' : '✅'} ${dateStr}：内容 ${posts.length} 条（${span}），订阅者 ${subscribers.length} 人，成功 ${sent} / 失败 ${failed}${retryEmails ? '（补发）' : ''}。`,
-  '', `头条：${edition.headline.title_zh || edition.headline.title}`
+  '', `头条：${displayTitle(edition.headline)}`
 );
 flushSummary();
 if (failed && !sent) process.exit(1);
