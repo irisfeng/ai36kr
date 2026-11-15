@@ -6,7 +6,7 @@ import db from '../lib/db.js';
 
 const LIMITS = { posts: 600, source_status: 100 };
 const COLS = {
-  posts: 'id, title, title_norm, title_zh, summary_zh, ext_score, source, category, summary, content, is_deep, up, down, created_at, url, is_external, source_home, image_url, tier, score, noise, event_id, rep, selected, src_count, hot_score',
+  posts: 'id, title, title_norm, title_zh, summary_zh, ext_score, source, category, summary, content, is_deep, up, down, created_at, url, is_external, source_home, image_url, tier, score, noise, event_id, rep, selected, src_count, hot_score, event_score',
   // 源健康状态随快照走：CI 每轮水合后 fail_streak 跨轮累计，连续失败告警才能生效
   source_status: 'name, home, url, ok, last_fetch, item_count, error, fail_streak',
 };

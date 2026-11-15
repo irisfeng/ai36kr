@@ -204,3 +204,102 @@ test('ranking picks the official report as representative and counts independent
   const second = computeRanking(rows.map((r) => ({ ...r, ...next.get(r.id) })), now);
   assert.deepEqual([...second], [...next]);
 });
+
+test('a developing leadership change stays one pick while a different Nvidia story stays apart', () => {
+  // 2026-11-12 至 11-15 的真实标题。换帅及其后续角度应并成一条；
+  // 芯片追踪法案（芯片安全法案）只是也写到英伟达，仍然分开。
+  seq = 0;
+  const samples = [
+    ['黄仁勋时代落幕，英伟达宣布其卸任，CFO克雷斯出任临时CEO', '钛媒体', 70, {
+      score: 90, summary: '英伟达宣布黄仁勋卸任CEO，由CFO克雷斯出任临时CEO，巨头正式开启权力交接过渡期。',
+    }],
+    ['黄仁勋卸任英伟达CEO，CFO Colette Kress出任临时接替者', 'TechCrunch', 71, {
+      score: 83, summary: '长期担任英伟达CFO的Colette Kress将作为临时负责人，接替深陷丑闻的前CEO黄仁勋。',
+    }],
+    ['炸了！英伟达最大的雷，是没接班人', '36氪', 72, {
+      score: 92, summary: '英伟达当地时间2026年11月12日宣布，执掌公司33年的黄仁勋即刻辞去相关职务，未披露辞任原因，董事会已启动新任CEO遴选程序。',
+    }],
+    ['黄仁勋辞职，英伟达33年首换帅，市值蒸发超3万亿', '量子位', 74, {
+      score: 88, summary: '英伟达成立33年来首次换帅，黄仁勋不再担任CEO，事件发生后公司市值蒸发超过3万亿。',
+    }],
+    ['报道称黄仁勋未对英伟达继任者展现信心', 'TechCrunch', 76, {
+      score: 78, summary: '据相关报道，黄仁勋在夏季的一次内部会议上，将继任者Kress形容为车灯前的鹿，未对其展现出足够的信心。',
+    }],
+    ['黄仁勋离任后AI初创融资出现明显缺口，VC与创始人预期投资收缩', 'TechCrunch', 78, {
+      score: 78, summary: '此前英伟达在黄仁勋主导下向AI初创投入数百亿资金，他离任后行业普遍预期后续单笔投资规模将缩小。',
+    }],
+    ['Jensen Huang卸任引发外界质疑Nvidia的开源AI支持立场', 'TechCrunch', 80, {
+      score: 76, summary: 'Jensen Huang辞职让行业质疑Nvidia对开源AI的投入承诺，涉及Hugging Face收购、开源权重模型等布局，公司正处于领导层过渡期。',
+    }],
+    ['不依赖Jensen Huang的开源AI', 'Interconnects', 82, {
+      score: 30, tier: 'T1_5', summary: '一次斩首式的核心管理层大换血，是时候启动重建工作了。',
+    }],
+    ['多国亚洲政府就Nvidia CEO Jensen Huang离职作出回应', 'TechCrunch', 84, {
+      score: 78, summary: '部分亚洲国家政府已出面确认芯片供应承诺，其余政府正监测该事件对本地项目的影响。',
+    }],
+    ['Elon Musk等科技高管签署请愿书 呼吁Nvidia恢复Jensen Huang职务', 'TechCrunch', 86, {
+      score: 75, summary: 'Elon Musk等一众科技高管签署请愿书，呼吁Nvidia恢复Jensen Huang的职务，截至周六下午该请愿书已累计获得超过11.5万个签名。',
+    }],
+    ['TechCrunch发问：英伟达安全团队此前缺位', 'TechCrunch', 88, {
+      score: 78, summary: '英伟达安全主管已于8月悄然离职，CEO黄仁勋因涉及包括与涉嫌向中国输送芯片的企业高管的往来关系卸任，前情报官员称这类漏洞属于日常讨论范畴。',
+    }],
+    ['英伟达私下确认可追踪芯片打击走私，行业此前公开质疑可行性', 'MIT TR', 75, {
+      score: 76, summary: '英伟达代表周四向美国议员Bill Foster证实，落实《芯片安全法案》要求的反芯片走私措施技术上可行，此前行业团体公开质疑该方案可行性。',
+    }],
+    ['谷歌一次发布两颗TPU，英伟达的“通用”招牌开始松动', '钛媒体', 77, {
+      score: 78, summary: '谷歌推出两款专业TPU产品，向英伟达主导的通用AI芯片路线发起挑战。',
+    }],
+    ['研究显示中国当前最强AI模型均采用受出口管制的英伟达芯片训练', 'TechCrunch', 79, {
+      score: 77, summary: '最新研究结果显示，目前国内性能最领先的AI大模型，全部使用被美国列入出口管制清单的英伟达芯片完成训练。',
+    }],
+    ['美国国会传唤NVIDIA CEO黄仁勋出席涉华相关闭门简报会', 'TechCrunch', 68, {
+      score: 82, summary: '美国众议院共和党人要求黄仁勋在周三当日结束前出席闭门简报会，就所谓涉中国间谍相关事件作出回应。',
+    }],
+    // 「回归常规」不是请他回来。快照里这篇专栏不该被换帅吞掉。
+    ['黄仁勋的麻烦，才刚开始', '钛媒体', 66, {
+      score: 30, summary: '文章认为黄仁勋已脱离此前的狂热状态，英伟达将回归常规制度管理体系。',
+    }],
+  ];
+  const posts = [
+    ...[...background, ...wide].map((t, i) => post(t, `bg${i}`, i)),
+    ...samples.map(([title, source, hours, extra]) => post(title, source, hours, extra)),
+  ];
+  const eventOf = assignEvents(posts);
+  const again = assignEvents([...posts].reverse());
+  assert.deepEqual([...again].sort(), [...eventOf].sort());
+  const idOf = (title) => posts.find((p) => p.title === title).id;
+  const eventOfTitle = (title) => eventOf.get(idOf(title));
+  const succession = [
+    '黄仁勋时代落幕，英伟达宣布其卸任，CFO克雷斯出任临时CEO',
+    '黄仁勋卸任英伟达CEO，CFO Colette Kress出任临时接替者',
+    '炸了！英伟达最大的雷，是没接班人',
+    '黄仁勋辞职，英伟达33年首换帅，市值蒸发超3万亿',
+    '报道称黄仁勋未对英伟达继任者展现信心',
+    '黄仁勋离任后AI初创融资出现明显缺口，VC与创始人预期投资收缩',
+    'Jensen Huang卸任引发外界质疑Nvidia的开源AI支持立场',
+    '不依赖Jensen Huang的开源AI',
+    '多国亚洲政府就Nvidia CEO Jensen Huang离职作出回应',
+    'Elon Musk等科技高管签署请愿书 呼吁Nvidia恢复Jensen Huang职务',
+    'TechCrunch发问：英伟达安全团队此前缺位',
+  ];
+  const lead = eventOfTitle(succession[0]);
+  for (const title of succession) assert.equal(eventOfTitle(title), lead, title);
+  const apart = (title) => assert.notEqual(eventOfTitle(title), lead, title);
+  apart('英伟达私下确认可追踪芯片打击走私，行业此前公开质疑可行性');
+  apart('谷歌一次发布两颗TPU，英伟达的“通用”招牌开始松动');
+  apart('研究显示中国当前最强AI模型均采用受出口管制的英伟达芯片训练');
+  apart('美国国会传唤NVIDIA CEO黄仁勋出席涉华相关闭门简报会');
+  apart('黄仁勋的麻烦，才刚开始');
+
+  const ranked = computeRanking(posts, T0 + 120 * 3600000);
+  const reps = succession.filter((title) => ranked.get(idOf(title)).rep === 1);
+  assert.equal(reps.length, 1);
+  assert.notEqual(reps[0], '不依赖Jensen Huang的开源AI');
+  const face = ranked.get(idOf(reps[0]));
+  assert.equal(face.event_score, 92);
+  assert.equal(face.selected, 1);
+  assert.equal(ranked.get(idOf('不依赖Jensen Huang的开源AI')).rep, 0);
+  assert.equal(ranked.get(idOf('英伟达私下确认可追踪芯片打击走私，行业此前公开质疑可行性')).selected, 1);
+  const second = computeRanking(posts.map((p) => ({ ...p, ...ranked.get(p.id) })), T0 + 120 * 3600000);
+  assert.deepEqual([...second], [...ranked]);
+});

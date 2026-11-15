@@ -7,7 +7,7 @@ import BackLink from '@/components/BackLink';
 import Breadcrumb from '@/components/Breadcrumb';
 import { titleOf, summaryOf } from '@/components/Story';
 import { editionDays, getPost, representativeIdFor, sameDayPicks } from '@/lib/queries';
-import { TIER_LABEL } from '@/lib/editorial';
+import { latestDevelopment, shownScore, TIER_LABEL } from '@/lib/editorial';
 import { CATEGORIES } from '@/lib/categories';
 import { normalizeExternalHttpUrl } from '@/lib/external-url';
 import { jsonLdScript, metaDescription, newsArticleJsonLd, pageMetadata } from '@/lib/seo';
@@ -49,6 +49,8 @@ export default async function PostPage({ params }) {
   }
   const title = titleOf(post);
   const summary = summaryOf(post);
+  const status = latestDevelopment(post, post.coverage);
+  const score = shownScore(post);
   const day = beijingDateKey(post.created_at);
   const hasDaily = editionDays().includes(day);
   const representative = post.rep ? null : post.coverage.find((item) => item.rep);
@@ -90,14 +92,27 @@ export default async function PostPage({ params }) {
           <time dateTime={post.created_at} suppressHydrationWarning>
             {dateGroup(post.created_at)} {timeHM(post.created_at)}
           </time>
-          {Number.isFinite(post.score) ? <span className="story-score" title="编辑评分">{post.score}</span> : null}
+          {Number.isFinite(score) ? <span className="story-score" title="编辑评分">{score}</span> : null}
         </div>
         <h1>{title}</h1>
         {post.title_zh ? <p className="article-title-orig">{post.title}</p> : null}
-        {summary ? <p className="article-summary">{summary}</p> : null}
+        {status ? (
+          <p className="article-status">
+            <span className="status-label">现在</span>
+            {status.summary}
+            <span className="status-by">
+              {status.source}
+              {' · '}
+              <time dateTime={status.created_at} suppressHydrationWarning>
+                {dateGroup(status.created_at)} {timeHM(status.created_at)}
+              </time>
+            </span>
+          </p>
+        ) : null}
+        {summary && summary !== status?.summary ? <p className="article-summary">{summary}</p> : null}
         <p className="article-note">
           听潮摘要，依据 {post.source} 的 RSS 改写，不是原文全文。时间为入库时间（北京时间）。
-          {Number.isFinite(post.score) ? '编辑评分衡量的是这件事值不值得今天看，不是事实核查。' : ''}
+          {Number.isFinite(score) ? '编辑评分衡量的是这件事值不值得今天看，不是事实核查。' : ''}
           {' '}
           <Link href="/about">编辑方法</Link>
           {hasDaily ? <> · <Link href={`/daily/${day}`}>当天日报</Link></> : null}
