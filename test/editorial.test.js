@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  detectNoise, effectiveScore, eventHeat, isSelected, pickRepresentative, THRESHOLDS,
+  detectNoise, effectiveScore, eventHeat, isSelected, latestDevelopment, pickRepresentative,
+  shownScore, statesWhoDidWhat, THRESHOLDS,
 } from '../lib/editorial.js';
 
 test('noise prefilter blocks market tickers, event promos and roundups only', () => {
@@ -72,4 +73,41 @@ test('the representative is the most authoritative clean report', () => {
     { id: 3, tier: 'T1', score: null, noise: '合集', created_at: '2026-10-06T00:00:00Z' },
   ];
   assert.equal(pickRepresentative(members).id, 2);
+});
+
+test('the representative is the report that says who did what, and the page shows the selection score', () => {
+  // 线上 404033：专栏 30 分，摘要没说出谁做了什么，却因为级别更高当了门面
+  const column = {
+    id: 404033, tier: 'T1_5', score: 30, noise: '', source: 'Interconnects',
+    title: '不依赖Jensen Huang的开源AI',
+    summary: '一次斩首式的核心管理层大换血，是时候启动重建工作了。',
+    created_at: '2026-11-14T12:23:00Z',
+  };
+  const wire = {
+    id: 401568, tier: 'T2', score: 76, noise: '', source: 'TechCrunch',
+    title: 'Jensen Huang卸任引发外界质疑Nvidia的开源AI支持立场',
+    summary: 'Jensen Huang辞职让行业质疑Nvidia对开源AI的投入承诺，涉及Hugging Face收购、开源权重模型等布局，公司正处于领导层过渡期。',
+    created_at: '2026-11-12T18:39:00Z',
+  };
+  const official = {
+    id: 9, tier: 'T1', score: 70, noise: '', source: 'NVIDIA',
+    title: '英伟达宣布黄仁勋卸任，CFO克雷斯出任临时CEO',
+    summary: '英伟达宣布黄仁勋卸任CEO，由CFO克雷斯出任临时CEO。',
+    created_at: '2026-11-13T01:00:00Z',
+  };
+  assert.equal(statesWhoDidWhat(column), false);
+  assert.equal(statesWhoDidWhat(wire), true);
+  assert.equal(pickRepresentative([column, wire]).id, wire.id);
+  // 说得一样清楚时，官方一手优先，即使媒体分更高
+  assert.equal(pickRepresentative([official, { ...wire, score: 90 }]).id, official.id);
+  const face = { ...wire, rep: 1, event_score: 76, score: 30 };
+  assert.equal(shownScore(face), 76);
+  assert.equal(shownScore({ ...column, rep: 0, event_score: null }), 30);
+  const status = latestDevelopment(wire, [column, {
+    id: 404418, source: 'TechCrunch', created_at: '2026-11-15T00:08:00Z',
+    title: 'TechCrunch发问：英伟达安全团队此前缺位',
+    summary: '英伟达安全主管已于8月悄然离职，CEO黄仁勋卸任，前情报官员称这类漏洞属于日常讨论范畴。',
+  }]);
+  assert.equal(status.id, 404418);
+  assert.match(status.summary, /黄仁勋/);
 });

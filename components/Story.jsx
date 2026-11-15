@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { timeAgo, timeHM } from '@/lib/time';
-import { TIER_LABEL } from '@/lib/editorial';
+import { shownScore, TIER_LABEL } from '@/lib/editorial';
 
 export const titleOf = (p) => p.title_zh || p.title;
 export const summaryOf = (p) => {
@@ -9,6 +9,29 @@ export const summaryOf = (p) => {
   // HN 条目的「N 分 / N 条评论」不是摘要（热度另在来源行显示）；不到一句话的（多半是 RSS 里的栏目名）也不显示
   return s.length >= 12 && s !== p.title && s !== p.title_zh && !s.startsWith('HN 热议') ? s : '';
 };
+
+// 后到的角度挂在这一条下面，不另开一条精选
+export function Updates({ post }) {
+  const items = (post.coverage || [])
+    .filter((c) => c.created_at && post.created_at && new Date(c.created_at) > new Date(post.created_at))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at) || b.id - a.id);
+  if (!items.length) return null;
+  const shown = items.slice(0, 3);
+  return (
+    <ul className="story-updates">
+      {shown.map((c, i) => (
+        <li key={c.id}>
+          <span className="story-update-label">{i === 0 ? '更新' : ''}</span>
+          <Link href={`/post/${c.id}`}>{c.title_zh || c.title}</Link>
+          <time dateTime={c.created_at} suppressHydrationWarning>{timeHM(c.created_at)}</time>
+        </li>
+      ))}
+      {items.length > shown.length ? (
+        <li className="story-update-more">还有 {items.length - shown.length} 条更新</li>
+      ) : null}
+    </ul>
+  );
+}
 
 // 「同一件事还有谁在报」：读者只看到一次，但看得到报道面
 export function Coverage({ post }) {
@@ -40,13 +63,14 @@ export default function Story({ post, lead = false, clock = false }) {
           {clock ? timeHM(post.created_at) : timeAgo(post.created_at)}
         </time>
         {post.ext_score > 0 ? <span className="story-hn">HN {post.ext_score}</span> : null}
-        {Number.isFinite(post.score) ? <span className="story-score" title="编辑评分">{post.score}</span> : null}
+        {Number.isFinite(shownScore(post)) ? <span className="story-score" title="编辑评分">{shownScore(post)}</span> : null}
       </div>
       <h3 className="story-title">
         <Link href={`/post/${post.id}`}>{titleOf(post)}</Link>
       </h3>
       {summary ? <p className="story-summary">{summary}</p> : null}
       <Coverage post={post} />
+      <Updates post={post} />
     </article>
   );
 }
