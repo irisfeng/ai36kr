@@ -42,6 +42,26 @@ test('a slow day is topped up from the best unselected events', () => {
   assert.equal(buildEdition([]).headline, null);
 });
 
+test('a thin RSS summary cannot lead the edition even with a high score', () => {
+  seq = 0;
+  const thin = item(83, '量子位', {
+    id: 403894,
+    title: '突发！DeepSeek开放全家桶API',
+    summary: '官方App功能均可自由组合调用',
+    selected: 1,
+  });
+  const wire = item(70, '钛媒体', {
+    summary: '英伟达宣布黄仁勋卸任CEO，由CFO克雷斯出任临时CEO。',
+    selected: 1,
+  });
+  const edition = buildEdition([thin, wire]);
+  assert.equal(edition.headline.id, wire.id);
+  assert.equal(edition.main.some((post) => post.id === 403894), false);
+  const alone = buildEdition([thin]);
+  assert.equal(alone.headline, null);
+  assert.equal(alone.briefs.some((post) => post.id === 403894), true);
+});
+
 test('edition copy names the calendar day, and the rolling window only when that day is empty', () => {
   assert.equal(
     describeEdition({ calendar: true, total: 105, main: Array(12), windowHours: null }),

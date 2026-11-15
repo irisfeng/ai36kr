@@ -1,4 +1,5 @@
 // 本站 RSS 输出：默认是精选（一件事一条）；/rss.xml?feed=all 是全部动态
+import { displayTitle } from '@/lib/editorial';
 import { listPicks, listPosts } from '@/lib/queries';
 import { SITE_ORIGIN, tracked } from '@/lib/seo';
 
@@ -19,7 +20,7 @@ export async function GET(request) {
     .map((p) => {
       const link = `${SITE}/post/${p.id}`;
       return `  <item>
-    <title>${esc(p.title_zh || p.title)}</title>
+    <title>${esc(displayTitle(p))}</title>
     <link>${esc(tracked(link, 'rss'))}</link>
     <guid isPermaLink="true">${link}</guid>
     <pubDate>${new Date(p.created_at).toUTCString()}</pubDate>

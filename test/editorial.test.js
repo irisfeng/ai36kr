@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  detectNoise, effectiveScore, eventHeat, isSelected, latestDevelopment, pickRepresentative,
-  shownScore, statesWhoDidWhat, THRESHOLDS,
+  detectNoise, displayTitle, effectiveScore, eventHeat, isSelected, latestDevelopment, pickRepresentative,
+  scoreCeiling, shownScore, statesWhoDidWhat, stripHypeTitle, THRESHOLDS,
 } from '../lib/editorial.js';
+import { buildEdition } from '../lib/edition.js';
+import { prepareEditorWrite } from '../lib/editor.js';
 
 test('noise prefilter blocks market tickers, event promos and roundups only', () => {
   assert.equal(detectNoise('美股三大指数集体收涨 纳指涨超1%创收盘新高'), '行情');
@@ -110,4 +112,73 @@ test('the representative is the report that says who did what, and the page show
   }]);
   assert.equal(status.id, 404418);
   assert.match(status.summary, /黄仁勋/);
+});
+
+test('thin RSS, customer stories and model listings stay under the written scale', () => {
+  // 门槛不动。这四条过不了，是因为分数被按标准压到门槛下面。
+  assert.deepEqual(THRESHOLDS, { T1: 60, T1_5: 65, T2: 75 });
+
+  const deepseekTitle = '突发！DeepSeek开放全家桶API';
+  const deepseekSummary = '官方App功能均可自由组合调用';
+  const deepseekScore = scoreCeiling(83, deepseekTitle, deepseekSummary, '量子位');
+  assert.equal(deepseekScore, 30);
+  assert.equal(isSelected({ score: deepseekScore, tier: 'T2' }), false);
+  assert.equal(displayTitle({ title: deepseekTitle }), 'DeepSeek开放全家桶API');
+
+  const ampTitle = 'How Amplitude ships product improvements in 1-2 days with OpenAI';
+  const ampSummary = 'Built primarily on OpenAI models, Amplitude’s proactive product agent, Wave, identifies what to build, helps teams ship changes with coding agents, and measures the impact.';
+  const ampScore = scoreCeiling(64, ampTitle, ampSummary, 'OpenAI');
+  assert.ok(ampScore <= 50);
+  assert.equal(isSelected({ score: ampScore, tier: 'T1', sourceCount: 1 }), false);
+
+  const llmonTitle = 'LLMON: An LLM-Native Markup Language, now in Granite 4.1 3B and 8B';
+  const llmonScore = scoreCeiling(60, llmonTitle, llmonTitle, 'Hugging Face');
+  assert.ok(llmonScore <= 45);
+  assert.equal(isSelected({ score: llmonScore, tier: 'T1', sourceCount: 1 }), false);
+
+  const column = {
+    id: 404033, tier: 'T1_5', noise: '', source: 'Interconnects',
+    title: '不依赖Jensen Huang的开源AI',
+    summary: '一次斩首式的核心管理层大换血，是时候启动重建工作了。',
+    created_at: '2026-11-14T12:23:00Z',
+  };
+  column.score = scoreCeiling(80, column.title, column.summary, column.source);
+  assert.ok(column.score <= 30);
+  const wire = {
+    id: 401568, tier: 'T2', score: 76, noise: '', source: 'TechCrunch',
+    title: 'Jensen Huang卸任引发外界质疑Nvidia的开源AI支持立场',
+    summary: 'Jensen Huang辞职让行业质疑Nvidia对开源AI的投入承诺，涉及Hugging Face收购、开源权重模型等布局，公司正处于领导层过渡期。',
+    created_at: '2026-11-12T18:39:00Z',
+  };
+  assert.equal(pickRepresentative([column, wire]).id, wire.id);
+
+  assert.equal(
+    scoreCeiling(90, 'OpenAI 发布 GPT-6.1', 'OpenAI 发布 GPT-6.1，API 定价每百万 token 2 美元。', 'OpenAI'),
+    90,
+  );
+  assert.equal(stripHypeTitle('炸了！英伟达最大的雷，是没接班人'), '英伟达最大的雷，是没接班人');
+  assert.equal(stripHypeTitle('智谱重磅发布 GLM-5.3'), '智谱发布 GLM-5.3');
+  assert.equal(stripHypeTitle('突发事件里的模型召回'), '突发事件里的模型召回');
+  assert.ok(scoreCeiling(70, '豆包工作正式接入 Kimi', '豆包工作接入 Kimi 模型，供用户切换。', '36氪') <= 45);
+
+  const edition = buildEdition([
+    {
+      id: 403894, title: deepseekTitle, summary: deepseekSummary, source: '量子位', tier: 'T2',
+      score: 83, selected: 1, rep: 1, noise: '', src_count: 1, ext_score: 0, category: '大模型',
+      created_at: '2026-11-15T01:00:00Z',
+    },
+    {
+      id: 402390, title: '英伟达宣布黄仁勋卸任', summary: '英伟达宣布黄仁勋卸任CEO，由CFO克雷斯出任临时CEO。',
+      source: '钛媒体', tier: 'T2', score: 70, selected: 1, rep: 1, noise: '', src_count: 1, ext_score: 0,
+      category: '芯片算力', created_at: '2026-11-15T00:00:00Z',
+    },
+  ]);
+  assert.equal(edition.headline.id, 402390);
+  assert.equal(edition.main.some((post) => post.id === 403894), false);
+
+  const written = prepareEditorWrite(
+    { title: deepseekTitle, summary: deepseekSummary, source: '量子位' },
+    { score: 83, title: '突发！DeepSeek开放全家桶API', summary: '突发！DeepSeek开放全家桶API，功能可以自由组合。' },
+  );
+  assert.deepEqual(written, { score: 30, title: null, summary: null });
 });

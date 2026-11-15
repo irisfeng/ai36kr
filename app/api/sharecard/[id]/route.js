@@ -2,6 +2,7 @@
 // 自包含：真实封面图以 base64 内嵌（走 SSRF 防护抓取），无图则用潮汐画
 import QRCode from 'qrcode';
 import db from '@/lib/db';
+import { displayTitle } from '@/lib/editorial';
 import { tideCoverSvg } from '@/lib/tide-cover';
 import { fetchPublicImage } from '@/lib/safe-image';
 import { dateGroup } from '@/lib/time';
@@ -79,7 +80,7 @@ export async function GET(request, ctx) {
   const post = db.prepare('SELECT * FROM posts WHERE id = ?').get(id);
   if (!post) return new Response('not found', { status: 404 });
 
-  const title = post.title_zh || post.title;
+  const title = displayTitle(post);
   const summary = post.summary_zh || post.summary || '';
   const dateStr = dateGroup(post.created_at); // 海报日期统一 UTC+8
   const qr = await QRCode.toDataURL(tracked(`${SITE}/post/${post.id}`, 'sharecard', 'qr'), { width: 300, margin: 0, color: { dark: '#191813', light: '#00000000' } });

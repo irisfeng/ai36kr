@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { EditionBody } from '@/components/DailyView';
+import { titleOf } from '@/components/Story';
 import SubscribeForm from '@/components/SubscribeForm';
 import { describeEdition } from '@/lib/edition';
 import { editionDays, listPosts, loadEdition, loadLatestEdition, sourceHealth } from '@/lib/queries';
@@ -118,7 +119,7 @@ export default async function HomePage({ searchParams }) {
               {hot.map((p, i) => (
                 <li key={p.id}>
                   <span className="hot-num">{i + 1}</span>
-                  <Link href={`/post/${p.id}`}>{p.title_zh || p.title}</Link>
+                  <Link href={`/post/${p.id}`}>{titleOf(p)}</Link>
                   {p.src_count > 1 ? <span className="hot-src">{p.src_count} 家</span> : null}
                 </li>
               ))}
