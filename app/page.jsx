@@ -1,15 +1,18 @@
 import Link from 'next/link';
-import Story, { titleOf } from '@/components/Story';
+import { EditionBody } from '@/components/DailyView';
 import SubscribeForm from '@/components/SubscribeForm';
-import { listPicks, listPosts, sourceHealth } from '@/lib/queries';
-import { SITE_DESCRIPTION, SITE_NAME, alternates, itemListJsonLd, jsonLdScript, socialMeta, storyListItems } from '@/lib/seo';
-import { beijingDateKey, timeAgo } from '@/lib/time';
+import { describeEdition } from '@/lib/edition';
+import { editionDays, listPosts, loadEdition, loadLatestEdition, sourceHealth } from '@/lib/queries';
+import { SITE_DESCRIPTION, SITE_NAME, alternates, editionListItems, itemListJsonLd, jsonLdScript, socialMeta } from '@/lib/seo';
+import { beijingDayRange, timeAgo } from '@/lib/time';
 
-// 首页 = 精选：过了编辑门槛的事件，一件事一条，按天分组。
-// 整页静态直出、边缘缓存 5 分钟，大多数请求不触发 Function / 数据库
-export const revalidate = 300;
+// 「今天」不能冻在构建期。带 ?day= 展开前几天时也要按请求渲染。
+export const dynamic = 'force-dynamic';
 
 const HOME_TITLE = `${SITE_NAME} - 值得看的 AI 新闻，一件事只说一次`;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+// 前几天只列最近这些；更早的从归档页往前翻
+const EARLIER_SHOWN = 7;
 
 export const metadata = {
   title: { absolute: HOME_TITLE },
@@ -18,53 +21,91 @@ export const metadata = {
   ...socialMeta({ title: HOME_TITLE, description: SITE_DESCRIPTION, path: '/' }),
 };
 
-function dayLabel(key, todayKey) {
+function monthDay(key) {
   const [, m, d] = key.split('-').map(Number);
-  const diff = Math.round((new Date(`${todayKey}T00:00:00Z`) - new Date(`${key}T00:00:00Z`)) / 86400000);
-  const rel = diff === 0 ? '今天' : diff === 1 ? '昨天' : diff === 2 ? '前天' : '';
-  return { rel, date: `${m} 月 ${d} 日` };
+  return `${m} 月 ${d} 日`;
 }
 
-export default async function HomePage() {
-  const posts = listPicks(60);
+function dayLabel(key, todayKey) {
+  const diff = Math.round((new Date(`${todayKey}T00:00:00Z`) - new Date(`${key}T00:00:00Z`)) / 86400000);
+  const rel = diff === 0 ? '今天' : diff === 1 ? '昨天' : diff === 2 ? '前天' : '';
+  return { rel, date: monthDay(key) };
+}
+
+function openDayFrom(sp, todayKey, days) {
+  const raw = Array.isArray(sp?.day) ? sp.day[0] : sp?.day;
+  if (typeof raw !== 'string' || !DATE_RE.test(raw) || raw >= todayKey) return null;
+  return days.includes(raw) ? raw : null;
+}
+
+export default async function HomePage({ searchParams }) {
+  const sp = await searchParams;
+  const edition = loadLatestEdition();
+  const todayKey = edition.dateKey;
   const hot = listPosts({ sort: 'hot', limit: 8 });
   const health = sourceHealth();
-
-  const days = [];
-  for (const p of posts) {
-    const key = beijingDateKey(p.created_at);
-    if (!days.length || days[days.length - 1].key !== key) days.push({ key, items: [] });
-    days[days.length - 1].items.push(p);
-  }
-  const todayKey = beijingDateKey(new Date().toISOString());
+  const earlier = editionDays().filter((d) => d < todayKey);
+  const openDay = openDayFrom(sp, todayKey, earlier);
+  let shown = earlier.slice(0, EARLIER_SHOWN);
+  if (openDay && !shown.includes(openDay)) shown = [openDay, ...shown];
+  const openEdition = openDay ? loadEdition(beijingDayRange(openDay)) : null;
+  const listed = editionListItems(edition);
 
   return (
     <div className="container page-grid">
       <main className="main-col">
-        {posts.length > 0 && (
+        {listed.length > 0 && (
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListJsonLd({ name: '精选', url: '/', items: storyListItems(posts) })) }}
+            dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListJsonLd({ name: '今日日报', url: '/', items: listed })) }}
           />
         )}
         <header className="page-head home-head">
           <h1>值得看的 AI 新闻，一件事只说一次</h1>
-          <p>过了入选门槛的条目按北京时间分日排列，点日期看当天日报。 <Link href="/about">编辑方法</Link></p>
+          <p>今天的头条、看点和简讯。点日期看归档，更早的日子一次展开一天。 <Link href="/about">编辑方法</Link></p>
         </header>
-        {posts.length === 0 && <div className="empty">正在抓取第一批内容，稍后刷新。</div>}
-        {days.map((day) => {
-          const { rel, date } = dayLabel(day.key, todayKey);
-          return (
-            <section className="day" key={day.key}>
-              <h2 className="day-head">
-                <Link href={`/daily/${day.key}`}>{rel ? <b>{rel}</b> : null}{date}</Link>
-                <span>{day.items.length} 条精选</span>
-              </h2>
-              {day.items.map((p) => <Story key={p.id} post={p} clock />)}
-            </section>
-          );
-        })}
-        {posts.length > 0 && (
+
+        {edition.calendar ? (
+          <h2 className="day-head">
+            <Link href={`/daily/${todayKey}`}><b>今天</b>{monthDay(todayKey)}</Link>
+            <span>选出 {edition.main.length} 条</span>
+          </h2>
+        ) : (
+          <h2 className="day-head">
+            <Link href="/daily">今天还没有新内容</Link>
+            <span>最近 {edition.windowHours} 小时</span>
+          </h2>
+        )}
+        <p className="edition-note">{describeEdition(edition)}</p>
+        {edition.headline
+          ? <EditionBody edition={edition} />
+          : <div className="empty">正在抓取第一批内容，稍后刷新。</div>}
+
+        {shown.length > 0 && (
+          <section className="earlier">
+            <h2 className="sec-title">前几天</h2>
+            {shown.map((key) => {
+              const { rel, date } = dayLabel(key, todayKey);
+              const open = key === openDay;
+              return (
+                <div className="earlier-day" key={key}>
+                  <h3 className="day-head">
+                    <Link href={`/daily/${key}`}>{rel ? <b>{rel}</b> : null}{date}</Link>
+                    {open
+                      ? <Link className="day-toggle" href="/">收起</Link>
+                      : <Link className="day-toggle" href={`/?day=${key}`}>展开这一天</Link>}
+                  </h3>
+                  {open && openEdition ? <EditionBody edition={openEdition} /> : null}
+                </div>
+              );
+            })}
+            {earlier.length > shown.length && (
+              <p className="more-link"><Link href={`/daily/${shown[shown.length - 1]}`}>更早的日报在归档里 →</Link></p>
+            )}
+          </section>
+        )}
+
+        {edition.headline && (
           <p className="more-link"><Link href="/all">没入选的也想看？全部动态 →</Link></p>
         )}
       </main>
@@ -77,7 +118,7 @@ export default async function HomePage() {
               {hot.map((p, i) => (
                 <li key={p.id}>
                   <span className="hot-num">{i + 1}</span>
-                  <Link href={`/post/${p.id}`}>{titleOf(p)}</Link>
+                  <Link href={`/post/${p.id}`}>{p.title_zh || p.title}</Link>
                   {p.src_count > 1 ? <span className="hot-src">{p.src_count} 家</span> : null}
                 </li>
               ))}

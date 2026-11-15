@@ -38,26 +38,26 @@ if (already && already.sent > 0 && already.failed > 0) {
   console.log(`补发模式：仅重投 ${retryEmails.size} 个失败邮箱`);
 }
 
-// 与 /daily 页同一份编排（最近 24h，空则 48h）
+// 与首页、/daily 同一份编排：北京日历日；当天还没有内容时才退回滚动窗
 const edition = loadLatestEdition();
-const windowH = edition.windowHours;
+const span = edition.calendar ? `日历日 ${edition.dateKey}` : `${edition.windowHours} 小时`;
 const posts = edition.main;
 if (!edition.headline) {
-  // 48h 仍无内容 = 数据链路故障，而非"今天没新闻"：不发空邮件，
-  // 以失败退出触发 GitHub 告警，后续备份时点会自动重试
-  summaryLines.push('## 日报邮件', '', '❌ 48h 窗口无任何内容（数据链路疑似中断），未发送，等待备份时点重试。');
+  // 当天是空的，滚动 48 小时仍无内容 = 数据链路故障，而非「今天没新闻」：
+  // 不发空邮件，以失败退出触发 GitHub 告警，后续备份时点会自动重试
+  summaryLines.push('## 日报邮件', '', '❌ 当天没有内容，滚动 48 小时窗口也是空的（数据链路疑似中断），未发送，等待备份时点重试。');
   flushSummary();
-  console.error('48h 窗口无内容，疑似数据链路故障，退出（备份时点将重试）');
+  console.error('当天与 48 小时窗口都无内容，疑似数据链路故障，退出（备份时点将重试）');
   process.exit(1);
 }
 
 const subscribers = db.prepare('SELECT email, token FROM subscribers WHERE confirmed = 1').all();
 const targets = retryEmails ? subscribers.filter((s) => retryEmails.has(s.email)) : subscribers;
-console.log(`日报内容：${posts.length} 条（${windowH}h），订阅者 ${subscribers.length} 人${retryEmails ? `，本轮补发 ${targets.length} 人` : ''}`);
+console.log(`日报内容：${posts.length} 条（${span}），订阅者 ${subscribers.length} 人${retryEmails ? `，本轮补发 ${targets.length} 人` : ''}`);
 
 if (!subscribers.length) {
   console.log('无已确认订阅者，跳过发送');
-  summaryLines.push('## 日报邮件', '', `⏭️ 无已确认订阅者，跳过发送（内容 ${posts.length} 条 / ${windowH}h）。`);
+  summaryLines.push('## 日报邮件', '', `⏭️ 无已确认订阅者，跳过发送（内容 ${posts.length} 条 / ${span}）。`);
   flushSummary();
   process.exit(0);
 }
@@ -96,7 +96,7 @@ db.prepare(
 ).run(dateKey, (already?.sent || 0) + sent, failed, JSON.stringify(failedEmails), new Date().toISOString());
 summaryLines.push(
   '## 日报邮件', '',
-  `${failed && !sent ? '❌' : '✅'} ${dateStr}：内容 ${posts.length} 条（${windowH}h），订阅者 ${subscribers.length} 人，成功 ${sent} / 失败 ${failed}${retryEmails ? '（补发）' : ''}。`,
+  `${failed && !sent ? '❌' : '✅'} ${dateStr}：内容 ${posts.length} 条（${span}），订阅者 ${subscribers.length} 人，成功 ${sent} / 失败 ${failed}${retryEmails ? '（补发）' : ''}。`,
   '', `头条：${edition.headline.title_zh || edition.headline.title}`
 );
 flushSummary();

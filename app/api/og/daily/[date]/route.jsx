@@ -33,7 +33,7 @@ export async function GET(request, ctx) {
   const { date } = await ctx.params;
   if (!DATE_RE.test(date)) return new Response('bad date', { status: 400 });
 
-  // 今天的图跟 /daily 一样取最近 24 小时；过去的日子取那一个北京日历日
+  // 今天的图跟 /daily 一样取北京日历日；这一天还没有内容时才用滚动窗。过去的日子始终是那一个日历日
   const isToday = date === beijingDateKey(new Date().toISOString());
   if (!isToday && !editionDays().includes(date)) return new Response('not found', { status: 404 });
   const edition = isToday ? loadLatestEdition() : loadEdition(beijingDayRange(date));
