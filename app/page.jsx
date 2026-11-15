@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { EditionBody } from '@/components/DailyView';
 import { titleOf } from '@/components/Story';
 import SubscribeForm from '@/components/SubscribeForm';
+import { DAILY_PROMISE } from '@/lib/email';
 import { describeEdition } from '@/lib/edition';
 import { editionDays, listPosts, loadEdition, loadLatestEdition, sourceHealth } from '@/lib/queries';
 import { SITE_DESCRIPTION, SITE_NAME, alternates, editionListItems, itemListJsonLd, jsonLdScript, socialMeta } from '@/lib/seo';
@@ -31,6 +32,15 @@ function dayLabel(key, todayKey) {
   const diff = Math.round((new Date(`${todayKey}T00:00:00Z`) - new Date(`${key}T00:00:00Z`)) / 86400000);
   const rel = diff === 0 ? '今天' : diff === 1 ? '昨天' : diff === 2 ? '前天' : '';
   return { rel, date: monthDay(key) };
+}
+
+function HomePromise() {
+  return (
+    <section className="home-promise" aria-label="订阅日报">
+      <p>{DAILY_PROMISE}</p>
+      <SubscribeForm />
+    </section>
+  );
 }
 
 function openDayFrom(sp, todayKey, days) {
@@ -79,8 +89,13 @@ export default async function HomePage({ searchParams }) {
         )}
         <p className="edition-note">{describeEdition(edition)}</p>
         {edition.headline
-          ? <EditionBody edition={edition} />
-          : <div className="empty">正在抓取第一批内容，稍后刷新。</div>}
+          ? <EditionBody edition={edition} afterHeadline={<HomePromise />} />
+          : (
+            <>
+              <div className="empty">正在抓取第一批内容，稍后刷新。</div>
+              <HomePromise />
+            </>
+          )}
 
         {shown.length > 0 && (
           <section className="earlier">
@@ -128,8 +143,8 @@ export default async function HomePage({ searchParams }) {
         )}
 
         <section className="side-card">
-          <h3 className="side-title">每日 8 点，一封邮件</h3>
-          <p className="side-note">头条、看点和当天值得知道的事。一件事只说一次。</p>
+          <h3 className="side-title">订阅日报</h3>
+          <p className="side-note">{DAILY_PROMISE}</p>
           <SubscribeForm />
         </section>
 
