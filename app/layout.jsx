@@ -2,6 +2,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import Nav from '@/components/Nav';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, jsonLdScript, siteGraph } from '@/lib/seo';
+import { WECHAT_ACCOUNT_URL } from '@/lib/wechat';
 
 const HOME_TITLE = `${SITE_NAME} - 值得看的 AI 新闻，一件事只说一次`;
 
@@ -63,8 +64,8 @@ export default function RootLayout({ children }) {
             <a href="/about">编辑方法</a>
             <a href="/rss.xml">RSS</a>
             <a href="/llms.txt">llms.txt</a>
-            <a className="f-note" href="https://mp.weixin.qq.com/s/GDvzQTFpTSTuBOTEfj5djg" target="_blank" rel="noopener noreferrer">
-              手记 · 一个人，和一台不会替你负责的机器 ↗
+            <a className="f-note" href={WECHAT_ACCOUNT_URL} target="_blank" rel="noopener noreferrer">
+              公众号 ↗
             </a>
             <span className="f-copy">© 2026 听潮 TideWire</span>
           </div>

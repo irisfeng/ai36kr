@@ -153,6 +153,8 @@ scripts/
 
 运行 `npm run wechat:menu:sync` 会发布三个直接触发动态卡片的底部菜单：`今日日报`、`当前热点`、`最新精选`（菜单 key 为 `DAILY` / `HOT` / `PICKS`；旧菜单的 `WEEKLY` / `FLASHES` 在重新同步前继续可用）。执行前须在微信开发者平台将执行机的固定公网 IPv4 加入 API IP 白名单；不使用出口 IP 会变化的 GitHub 托管 Runner 发布。站点运行时仍只需要 `WECHAT_TOKEN`，不会读取 AppSecret。
 
+日报 workflow 在邮件之后调用 `scripts/post-wechat.mjs`：把和邮件相同的头条，连同首页链接，群发一条。没有 `WECHAT_APP_ID` / `WECHAT_APP_SECRET` 就跳过。同一北京日只成功一次，不另加发送时点。
+
 部署后还需在 GitHub Actions secrets 中配置：`TURSO_DATABASE_URL` + `TURSO_AUTH_TOKEN`（aggregate 直写远端库、daily-digest 读取同源数据，必需）、`RESEND_API_KEY`（日报发信，必需）、`ARK_API_KEY`（编辑评分与写稿，强烈建议）、`REPO_ALERT_TOKEN`（源失败自动开 Issue，可选）、`BAIDU_PUSH_TOKEN`（百度主动推送，可选；IndexNow 无需 secret，密钥即 `public/` 下的 32 位 hex txt）、`X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_SECRET`（X 每日一推，可选）。推广类步骤（SEO 推送、X 发帖）缺 secret 一律静默跳过且 `continue-on-error`，绝不影响日报主流程。生产环境若缺少 `CRON_SECRET`，刷新接口会以 503 明确拒绝；仅非生产环境且请求 URL 为 `localhost`、`127.0.0.1` 或 `::1` 时允许免密刷新。
 
 ### 写接口限流边界
