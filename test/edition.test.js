@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildEdition } from '../lib/edition.js';
+import { buildEdition, describeEdition } from '../lib/edition.js';
 import { inventsNumbers, parseEditorReply } from '../lib/editor.js';
 
 let seq = 0;
@@ -40,6 +40,17 @@ test('a slow day is topped up from the best unselected events', () => {
   assert.equal(e.headline.source, 'A');
   assert.deepEqual(e.briefs.map((p) => p.source), ['F', 'G']);
   assert.equal(buildEdition([]).headline, null);
+});
+
+test('edition copy names the calendar day, and the rolling window only when that day is empty', () => {
+  assert.equal(
+    describeEdition({ calendar: true, total: 105, main: Array(12), windowHours: null }),
+    '当天 105 件事，选出 12 条。一件事一条。',
+  );
+  assert.equal(
+    describeEdition({ calendar: false, total: 34, main: Array(7), windowHours: 24 }),
+    '今天还没有新内容。最近 24 小时 34 件事，选出 7 条。一件事一条。',
+  );
 });
 
 test('editor replies are accepted only when complete and well-formed', () => {

@@ -5,34 +5,12 @@ import SubscribeForm from '@/components/SubscribeForm';
 import Breadcrumb from '@/components/Breadcrumb';
 import { editionListItems, itemListJsonLd, jsonLdScript } from '@/lib/seo';
 
-// 日报视图：/daily（最近 24 小时）与 /daily/[date]（日历日归档）共用。
-// 版式即编排规则：头条 → 看点 → 分类 → 简讯（见 lib/edition.js）
-export default function DailyView({
-  edition, headTitle, headDesc, shareTitle, shareText, sharePath = '/daily',
-  navPrev = null, navNext = null, showPoster = false, crumbs = null,
-}) {
+// 日报正文：头条 → 看点 → 分类 → 简讯（见 lib/edition.js）。
+// 首页、/daily 和日历日归档共用，所以三条路径的头条是同一篇。
+export function EditionBody({ edition }) {
   const { headline, highlights, sections, briefs } = edition;
-  const listed = editionListItems(edition);
   return (
-    <div className="container narrow">
-      {listed.length > 0 && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListJsonLd({ name: headTitle, url: sharePath, items: listed })) }}
-        />
-      )}
-      <div className="page-head">
-        {crumbs ? <Breadcrumb items={crumbs} /> : null}
-        <h1>{headTitle}</h1>
-        <p suppressHydrationWarning>{headDesc}</p>
-        {(navPrev || navNext) && (
-          <nav className="pager">
-            {navPrev ? <Link href={navPrev}>← 前一天</Link> : <span />}
-            {navNext ? <Link href={navNext}>后一天 →</Link> : <span />}
-          </nav>
-        )}
-      </div>
-
+    <>
       {!headline && <div className="empty">这一天还没有收录任何内容。</div>}
 
       {headline && (
@@ -62,6 +40,38 @@ export default function DailyView({
           {briefs.map((p) => <StoryRow key={p.id} post={p} />)}
         </section>
       )}
+    </>
+  );
+}
+
+// 日报页壳：/daily 与 /daily/[date] 共用。首页把 EditionBody 放进自己的栏。
+export default function DailyView({
+  edition, headTitle, headDesc, shareTitle, shareText, sharePath = '/daily',
+  navPrev = null, navNext = null, showPoster = false, crumbs = null,
+}) {
+  const { headline } = edition;
+  const listed = editionListItems(edition);
+  return (
+    <div className="container narrow">
+      {listed.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(itemListJsonLd({ name: headTitle, url: sharePath, items: listed })) }}
+        />
+      )}
+      <div className="page-head">
+        {crumbs ? <Breadcrumb items={crumbs} /> : null}
+        <h1>{headTitle}</h1>
+        <p suppressHydrationWarning>{headDesc}</p>
+        {(navPrev || navNext) && (
+          <nav className="pager">
+            {navPrev ? <Link href={navPrev}>← 前一天</Link> : <span />}
+            {navNext ? <Link href={navNext}>后一天 →</Link> : <span />}
+          </nav>
+        )}
+      </div>
+
+      <EditionBody edition={edition} />
 
       {headline && (
         <div className="edition-foot">

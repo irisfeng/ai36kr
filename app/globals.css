@@ -156,6 +156,11 @@ input, textarea, select { font-family: inherit; font-size: inherit; }
 .day-head a:hover { color: var(--red); }
 .more-link { margin-top: 28px; font-size: 13.5px; color: var(--ink-3); }
 .more-link a:hover { color: var(--red); }
+.edition-note { margin-top: 8px; font-size: 13.5px; color: var(--ink-3); }
+.earlier { margin-top: 48px; }
+.earlier-day + .earlier-day { margin-top: 28px; }
+.day-toggle { font-family: var(--sans); font-size: 13px; letter-spacing: 0; color: var(--ink-2); }
+.day-toggle:hover { color: var(--red); }
 
 /* ---------- 单行条目（全部动态 / 简讯 / 其他报道） ---------- */
 .rows + .rows { margin-top: 28px; }
