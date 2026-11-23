@@ -4,6 +4,7 @@ import ShareButtons from '@/components/ShareButtons';
 import SubscribeForm from '@/components/SubscribeForm';
 import Breadcrumb from '@/components/Breadcrumb';
 import { editionListItems, itemListJsonLd, jsonLdScript } from '@/lib/seo';
+import { WECHAT_ACCOUNT_URL } from '@/lib/wechat';
 
 // 日报正文：头条 → 看点 → 分类 → 简讯（见 lib/edition.js）。
 // 首页、/daily 和日历日归档共用，所以三条路径的头条是同一篇。
@@ -73,17 +74,16 @@ export default function DailyView({
 
       <EditionBody edition={edition} />
 
-      {headline && (
-        <div className="edition-foot">
-          <SubscribeForm compact />
-          <span className="edition-share">
-            <ShareButtons title={shareTitle} text={shareText} path={sharePath} />
-            {showPoster ? (
-              <a className="share-btn" href="/daily-card.html" target="_blank" rel="noopener noreferrer">头条海报 ↗</a>
-            ) : null}
-          </span>
-        </div>
-      )}
+      <div className="edition-foot">
+        {headline ? <SubscribeForm compact /> : <span />}
+        <span className="edition-share">
+          {headline ? <ShareButtons title={shareTitle} text={shareText} path={sharePath} /> : null}
+          {headline && showPoster ? (
+            <a className="share-btn" href="/daily-card.html" target="_blank" rel="noopener noreferrer">头条海报 ↗</a>
+          ) : null}
+          <a className="share-btn" href={WECHAT_ACCOUNT_URL} target="_blank" rel="noopener noreferrer">关注公众号 ↗</a>
+        </span>
+      </div>
     </div>
   );
 }

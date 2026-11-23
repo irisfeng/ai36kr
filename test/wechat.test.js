@@ -11,6 +11,7 @@ import {
 } from '../lib/wechat.js';
 import { createWechatCard } from '../lib/wechat-cards.js';
 import { WECHAT_MENU } from '../lib/wechat-menu.js';
+import { planWechatPush, sendWechatMassText, wechatDailyMessage } from '../lib/wechat-push.js';
 
 function signature(token, timestamp, nonce) {
   return createHash('sha1').update([token, timestamp, nonce].sort().join('')).digest('hex');
@@ -74,7 +75,11 @@ test('publishes three direct menu actions using the supported CLICK event keys',
 });
 
 test('subscribe gets the welcome reply and unknown text gets help', () => {
-  assert.match(classifyWechatMessage({ msgType: 'event', event: 'subscribe' }).text, /回复「日报」/);
+  const welcome = classifyWechatMessage({ msgType: 'event', event: 'subscribe' }).text;
+  assert.match(welcome, /回复「日报」/);
+  assert.match(welcome, /「热点」/);
+  assert.match(welcome, /「精选」/);
+  assert.doesNotMatch(welcome, /实测|实践|FDE/);
   assert.match(classifyWechatMessage({ msgType: 'text', content: '你好' }).text, /「日报」「热点」「精选」/);
 });
 
@@ -85,11 +90,14 @@ test('builds a dynamic daily card with tracked direct link', () => {
       { title: '第二个重要变化' },
     ],
   }, 'https://aikr.shddai.net/path-is-ignored');
-  assert.equal(card.title, '今日听潮｜2 条值得看的 AI 新闻');
-  assert.match(card.description, /第一个重要变化；第二个重要变化/);
-  assert.equal(new URL(card.url).pathname, '/daily');
+  assert.equal(card.title, '听潮日报｜第一个重要变化');
+  assert.doesNotMatch(card.title, /条值得看的/);
+  assert.equal(new URL(card.url).pathname, '/');
   assert.equal(new URL(card.url).searchParams.get('utm_source'), 'wechat');
   assert.equal(card.picUrl, 'https://aikr.shddai.net/og-cover.png');
+  const about = createWechatCard('about', {});
+  assert.doesNotMatch(`${about.title}${about.description}`, /实测|实践|FDE/);
+  assert.match(about.description, /「日报」「热点」或「精选」/);
 });
 
 test('renders one tappable news article and safely splits CDATA terminators', () => {
@@ -104,4 +112,50 @@ test('renders one tappable news article and safely splits CDATA terminators', ()
   assert.match(reply, /<ArticleCount>1<\/ArticleCount>/);
   assert.match(reply, /<Url><!\[CDATA\[https:\/\/aikr\.shddai\.net\/daily\]\]><\/Url>/);
   assert.match(reply, /今日\]\]\]\]><!\[CDATA\[>听潮/);
+});
+
+test('the daily push uses the email subject and the homepage, and skips without a key', async () => {
+  const edition = {
+    dateKey: '2026-11-15',
+    headline: { title: '突发！DeepSeek开放全家桶API', title_zh: null },
+  };
+  const message = wechatDailyMessage(edition);
+  assert.equal(message.title, '听潮日报｜DeepSeek开放全家桶API');
+  assert.equal(new URL(message.url).origin + new URL(message.url).pathname, 'https://aikr.shddai.net/');
+  assert.equal(new URL(message.url).searchParams.get('utm_source'), 'wechat');
+  assert.match(message.text, /听潮日报｜DeepSeek开放全家桶API/);
+  assert.equal(planWechatPush({ edition }).action, 'skip');
+  assert.equal(planWechatPush({ appId: 'wx', appSecret: 'secret', edition, alreadySent: true }).reason, '今日已推送');
+  assert.equal(planWechatPush({ appId: 'wx', appSecret: 'secret', edition: { headline: null } }).reason, '当天没有头条');
+
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    calls.push({ url: String(url), body: options?.body || '' });
+    if (String(url).includes('/cgi-bin/token')) {
+      return { json: async () => ({ access_token: 'token-value' }) };
+    }
+    return { json: async () => ({ errcode: 0, msg_id: 42 }) };
+  };
+  const sent = await sendWechatMassText({
+    appId: 'wx-app',
+    appSecret: 'super-secret',
+    text: message.text,
+    clientMsgId: 'tidewire-2026-11-15',
+    fetchImpl,
+  });
+  assert.equal(sent.msgId, 42);
+  const payload = JSON.parse(calls[1].body);
+  assert.equal(payload.msgtype, 'text');
+  assert.equal(payload.clientmsgid, 'tidewire-2026-11-15');
+  assert.match(payload.text.content, /https:\/\/aikr\.shddai\.net\/\?/);
+  assert.equal(calls[1].url.includes('super-secret'), false);
+  assert.equal(calls[1].body.includes('super-secret'), false);
+
+  const failing = async () => ({ json: async () => ({ errcode: 40164, errmsg: 'invalid ip super-secret' }) });
+  await assert.rejects(
+    () => sendWechatMassText({
+      appId: 'wx-app', appSecret: 'super-secret', text: 'x', clientMsgId: 'tidewire-2026-11-15', fetchImpl: failing,
+    }),
+    (error) => error.message === '获取 access_token 失败：40164' && !error.message.includes('super-secret'),
+  );
 });

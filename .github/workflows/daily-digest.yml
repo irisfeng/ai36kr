@@ -38,6 +38,16 @@ jobs:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
+      # 与邮件同一份编排、同一个时点。缺密钥时脚本自己退出，不新加一轮发送。
+      - name: 公众号每日一推
+        run: node scripts/post-wechat.mjs
+        continue-on-error: true
+        env:
+          WECHAT_APP_ID: ${{ secrets.WECHAT_APP_ID }}
+          WECHAT_APP_SECRET: ${{ secrets.WECHAT_APP_SECRET }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+
       # 推广步骤一律 continue-on-error + 缺 secret 静默跳过，绝不影响日报主流程
       - name: SEO 推送（百度主动推送 + IndexNow）
         run: node scripts/push-urls.mjs
