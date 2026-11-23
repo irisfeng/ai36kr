@@ -7,7 +7,7 @@ import { editionListItems, itemListJsonLd, jsonLdScript } from '@/lib/seo';
 
 // 日报正文：头条 → 看点 → 分类 → 简讯（见 lib/edition.js）。
 // 首页、/daily 和日历日归档共用，所以三条路径的头条是同一篇。
-export function EditionBody({ edition }) {
+export function EditionBody({ edition, afterHeadline = null }) {
   const { headline, highlights, sections, briefs } = edition;
   return (
     <>
@@ -19,6 +19,7 @@ export function EditionBody({ edition }) {
           <Story post={headline} lead />
         </section>
       )}
+      {afterHeadline}
 
       {highlights.length > 0 && (
         <section className="edition-sec">

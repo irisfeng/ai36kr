@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { DAILY_PROMISE } from '@/lib/email';
 import SubscribeForm from './SubscribeForm';
 
 const RSS_URL = 'https://aikr.shddai.net/rss.xml';
@@ -36,14 +37,14 @@ export default function SubscribeEntry() {
           <span className="sm-seal">听</span>
           <div>
             <b>订阅听潮</b>
-            <p>每日 8 点，一页看懂 AI 圈</p>
+            <p>{DAILY_PROMISE}</p>
           </div>
           <button type="button" className="sharecard-close" aria-label="关闭" onClick={() => setOpen(false)}>×</button>
         </div>
         <div className="sm-row">
           <div className="sm-row-title"><span className="sm-mark" />邮箱日报</div>
           <SubscribeForm />
-          <p className="sm-note">头条、看点和当天值得知道的事，填邮箱即订阅，随时一键退订</p>
+          <p className="sm-note">主题就是这一页的头条。填邮箱即订阅，随时一键退订。</p>
         </div>
         <div className="sm-row">
           <div className="sm-row-title"><span className="sm-mark" />RSS</div>

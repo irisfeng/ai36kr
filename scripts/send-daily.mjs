@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import db from '../lib/db.js';
 import { displayTitle } from '../lib/editorial.js';
 import { loadLatestEdition } from '../lib/queries.js';
-import { sendEmail, dailyEmailHtml } from '../lib/email.js';
+import { dailyEmailHtml, dailySubject, editionPageUrl, sendEmail } from '../lib/email.js';
 
 const SITE = 'https://aikr.shddai.net';
 
@@ -73,12 +73,12 @@ for (const sub of targets) {
   try {
     await sendEmail({
       to: sub.email,
-      // 标题用头条：比固定的刊名更值得点开
-      subject: `听潮日报｜${displayTitle(edition.headline)}`,
+      subject: dailySubject(edition),
       html: dailyEmailHtml({
         dateStr, edition,
         unsubUrl: `${SITE}/api/subscribe/unsubscribe?token=${sub.token}`,
-        dailyUrl: `${SITE}/daily?utm_source=email&utm_medium=daily`,
+        // 打开首页正在展示的这一页，不另链一条「今天」
+        dailyUrl: editionPageUrl('daily'),
       }),
     });
     sent++;

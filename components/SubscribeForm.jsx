@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { DAILY_PROMISE } from '@/lib/email';
 
 // 日报订阅表单：填邮箱即订阅（single opt-in），欢迎信内附一键退订
 export default function SubscribeForm({ compact = false }) {
@@ -23,7 +24,7 @@ export default function SubscribeForm({ compact = false }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '订阅失败');
       setState('sent');
-      setMsg(data.already ? '你已订阅过，日报照常发送 📮' : '订阅成功，明早 8 点见 📮');
+      setMsg(data.already ? `你已订阅。${DAILY_PROMISE}` : `订阅成功。${DAILY_PROMISE}`);
     } catch (err) {
       setState('error');
       setMsg(err.message);

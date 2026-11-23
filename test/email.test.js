@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { welcomeEmailHtml, dailyEmailHtml } from '../lib/email.js';
+import { DAILY_PROMISE, dailyEmailHtml, dailySubject, editionPageUrl, welcomeEmailHtml } from '../lib/email.js';
 
 const PAYLOAD = '<img src="https://attacker.invalid/pixel">';
 
@@ -38,7 +38,7 @@ test('daily email follows the calendar day, and names the rolling window only wh
   const base = {
     dateStr: '2026 年 11 月 15 日',
     unsubUrl: 'https://example.test/u',
-    dailyUrl: 'https://aikr.shddai.net/daily?utm_source=email&utm_medium=daily',
+    dailyUrl: editionPageUrl('daily'),
   };
   const post = { id: 402390, title: '黄仁勋时代落幕', source: '钛媒体', src_count: 1 };
   const calendar = dailyEmailHtml({
@@ -47,11 +47,39 @@ test('daily email follows the calendar day, and names the rolling window only wh
   });
   assert.match(calendar, /当天 12 件事，一件事只说一次/);
   assert.doesNotMatch(calendar, /过去 24 小时/);
-  assert.match(calendar, /https:\/\/aikr\.shddai\.net\/daily\?utm_source=email/);
+  assert.match(calendar, /https:\/\/aikr\.shddai\.net\/\?utm_source=email&amp;utm_medium=daily/);
+  assert.match(calendar, /北京时间 8 点后，当天这一页送到邮箱。/);
 
   const rolling = dailyEmailHtml({
     ...base,
     edition: { headline: post, highlights: [], sections: [], briefs: [], total: 7, calendar: false, windowHours: 24 },
   });
   assert.match(rolling, /过去 24 小时 7 件事，一件事只说一次/);
+});
+
+test('welcome and daily mail open the homepage and share one promise', () => {
+  const edition = {
+    headline: { title: '突发！DeepSeek开放全家桶API', title_zh: null },
+    calendar: true,
+    dateKey: '2026-11-15',
+  };
+  assert.equal(dailySubject(edition), '听潮日报｜DeepSeek开放全家桶API');
+  assert.equal(DAILY_PROMISE, '北京时间 8 点后，当天这一页送到邮箱。');
+
+  const daily = new URL(editionPageUrl('daily'));
+  const welcome = new URL(editionPageUrl('welcome'));
+  assert.equal(daily.origin + daily.pathname, 'https://aikr.shddai.net/');
+  assert.equal(welcome.origin + welcome.pathname, 'https://aikr.shddai.net/');
+  assert.equal(daily.searchParams.get('utm_source'), 'email');
+  assert.equal(welcome.searchParams.get('utm_source'), 'email');
+  assert.equal(daily.searchParams.get('utm_medium'), 'daily');
+  assert.equal(welcome.searchParams.get('utm_medium'), 'welcome');
+
+  const html = welcomeEmailHtml({ unsubUrl: 'https://example.test/u' });
+  assert.match(html, /北京时间 8 点后，当天这一页送到邮箱。/);
+  assert.match(html, /utm_source=email/);
+  assert.match(html, /utm_medium=welcome/);
+  assert.match(html, /打开当天这一页/);
+  assert.doesNotMatch(html, /过去 24 小时/);
+  assert.doesNotMatch(html, /\/daily\?/);
 });
